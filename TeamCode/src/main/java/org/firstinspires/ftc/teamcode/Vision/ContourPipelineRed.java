@@ -180,6 +180,11 @@ public class ContourPipelineRed extends OpenCvPipeline {
 
         return input;
     }
+
+
+
+
+
     /*
     Synchronize these operations as the user code could be incorrect otherwise, i.e a property is read
     while the same rectangle is being processed in the pipeline, leading to some values being not
@@ -209,6 +214,7 @@ public class ContourPipelineRed extends OpenCvPipeline {
     public double getRectMidpointX() {
         synchronized (sync) {
             return getRectX() + (getRectWidth() / 2.0);
+            
         }
     }
     public double getRectMidpointY() {

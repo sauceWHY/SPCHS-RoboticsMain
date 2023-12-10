@@ -31,21 +31,25 @@ public class AutoBlueBoard extends LinearOpMode {
             Assuming you start at (0,0) at the start of the program, the robot with move to the coordinates labeled at an 120 degree heading
          */
 
-        Pose2d startPose = new Pose2d(35, 57, 270);
+        Pose2d startPose = new Pose2d(0, 0, 0);
 
         drive.setPoseEstimate(startPose);
 
         TrajectorySequence genesis = drive.trajectorySequenceBuilder(startPose) //(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
-                .addTemporalMarker(() -> hand.setPosition(1))
-                .strafeLeft(60)
-                .addTemporalMarker(() -> hand.setPosition(0))
-                .waitSeconds(2)
-                .addTemporalMarker(2, () -> {
+                .addTemporalMarker(() -> hand.setPosition(.8))
+                .addTemporalMarker(() -> arm.setPosition(.8))
+                .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
+                .waitSeconds(.5)
+                .addTemporalMarker(() -> {
                     armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    armmotor.setTargetPosition(3000);
+                    armmotor.setTargetPosition(3500);
                     armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     armmotor.setPower(1);
-                 }) //moves the arm to the drop the pixel on the backboard
+                }) //moves the arm to the drop the pixel on the backboard
+                .waitSeconds(2.5)
+                .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
+                .waitSeconds(.5)
+                .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
                 .waitSeconds(5)
                 .build();
 

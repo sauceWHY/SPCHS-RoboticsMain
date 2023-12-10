@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -24,7 +25,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 public class AutoRed extends LinearOpMode {
     private Servo hand;
     private Servo arm;
-    private DcMotor armmotor;
+    private DcMotorEx armmotor;
     private static final int CAMERA_WIDTH  = 640; // width  of camera resolution
     private static final int CAMERA_HEIGHT = 480; // height of camera resolution
     public static double borderLeftX    = 0.0;   //fraction of pixels from the left side of the cam to skip
@@ -42,7 +43,7 @@ public class AutoRed extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         hand = hardwareMap.get(Servo.class, "hand"); //initializing the claw servo
         arm = hardwareMap.get(Servo.class, "arm"); //initializing the wrist servo
-        armmotor = hardwareMap.get(DcMotor.class, "armmotor"); //initializing the arm motor
+        armmotor = hardwareMap.get(DcMotorEx.class, "armmotor"); //initializing the arm motor
         // OpenCV webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -76,6 +77,7 @@ public class AutoRed extends LinearOpMode {
         FtcDashboard dashboard = FtcDashboard.getInstance(); //this all the way to telemetry.update(); is available at 192.168.43.1:8080/dash
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         FtcDashboard.getInstance().startCameraStream(webcam, 30);
+        telemetry.addData("Prop",myPipeline.getRectMidpointX());
         telemetry.update();
 
         /* Trajectories either consist of vectors or poses. Vectors are for moving only x and y coordinates while poses have a heading(angle)
@@ -166,7 +168,6 @@ public class AutoRed extends LinearOpMode {
         waitForStart();
 
 
-        if(isStopRequested()) return;
         if(myPipeline.getRectArea() > 2000){
             if(myPipeline.getRectMidpointX() > 400){
                 telemetry.addLine("Autonomous Right");
@@ -185,6 +186,8 @@ public class AutoRed extends LinearOpMode {
             }
 
         }
+
+        if(isStopRequested()) return;
 
     }
 }
