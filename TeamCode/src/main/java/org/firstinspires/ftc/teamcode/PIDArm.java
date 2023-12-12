@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -8,6 +11,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -15,7 +19,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 @TeleOp
-public class PIDArm extends LinearOpMode {
+public class PIDArm extends OpMode {
     private PIDController controller;
     public static double p=0, i=0, d=0;
     public static double f = 0;
@@ -24,12 +28,13 @@ public class PIDArm extends LinearOpMode {
     private final double ticks_per_rev = 537.6;
     private DcMotorEx leftSlide;
 
-    @Override
-    public void runOpMode() throws InterruptedException {
+    public void init() {
         controller = new PIDController(p, i, d);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
+    }
+        public void loop() {
         controller.setPID(p, i, d);
         int slidePos = leftSlide.getCurrentPosition();
         double pid = controller.calculate(slidePos, target);
@@ -43,10 +48,8 @@ public class PIDArm extends LinearOpMode {
         telemetry.addData("target", target);
         telemetry.update();
 
-        waitForStart();
-
-
     }
+
 }
 
 
