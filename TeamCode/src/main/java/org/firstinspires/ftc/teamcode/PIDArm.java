@@ -26,23 +26,23 @@ public class PIDArm extends OpMode {
 
     public static int target = 0;
     private final double ticks_per_rev = 537.6;
-    private DcMotorEx rightSlide;
+    private DcMotorEx armmotor;
 
     public void init() {
         controller = new PIDController(p, i, d);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        armmotor = hardwareMap.get(DcMotorEx.class, "armmotor");
     }
         public void loop() {
         controller.setPID(p, i, d);
-        int slidePos = rightSlide.getCurrentPosition();
+        int slidePos = armmotor.getCurrentPosition();
         double pid = controller.calculate(slidePos, target);
         double ff = Math.cos(Math.toRadians(target / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        rightSlide.setPower(power);
+        armmotor.setPower(power);
 
         telemetry.addData("pos", slidePos);
         telemetry.addData("target", target);
