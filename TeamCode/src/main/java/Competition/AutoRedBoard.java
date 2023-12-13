@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -36,6 +37,8 @@ public class AutoRedBoard extends LinearOpMode {
     TrajectorySequence leftTape;
     TrajectorySequence middleTape;
     TrajectorySequence rightTape;
+    public static DcMotorEx leftSlide;
+    public static DcMotorEx rightSlide;
 
     @Override
     public void runOpMode() {
@@ -43,6 +46,17 @@ public class AutoRedBoard extends LinearOpMode {
         hand = hardwareMap.get(Servo.class, "hand");
         arm = hardwareMap.get(Servo.class, "arm"); //wrist
         armmotor = hardwareMap.get(DcMotor.class, "armmotor");
+        leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
+        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        int s = 1;
+        int startpos = 0;
+        int rightfullyex = -2000;
+        int leftfullyex = 2000;
         // OpenCV webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -112,8 +126,8 @@ public class AutoRedBoard extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
                 leftTape = drive.trajectorySequenceBuilder(startPose)
-                        .addTemporalMarker(() -> hand.setPosition(.8))
-                        .addTemporalMarker(() -> arm.setPosition(.8))
+ //                       .addTemporalMarker(() -> hand.setPosition(.8))
+ //                       .addTemporalMarker(() -> arm.setPosition(.8))
                         .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
                         .lineTo(new Vector2d(34,-37))
                         .waitSeconds(.5)

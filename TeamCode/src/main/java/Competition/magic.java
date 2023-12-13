@@ -32,7 +32,6 @@ public class magic extends LinearOpMode {
     public static DcMotor armmotor;
     public static Servo drone;
     public static Servo arm;
-    public static Servo riggingsupport;
     public static DcMotor intakemotor;
     public static DcMotorEx leftSlide;
     public static DcMotorEx rightSlide;
@@ -51,10 +50,10 @@ public class magic extends LinearOpMode {
     double backLeftPower;
     double frontRightPower;
     double backRightPower;
-    private static PIDController controller;
+    public static PIDController controller;
     public static double p=0.003, i=0, d=0.00015;
     public static double f = 0.08;
-    private final double ticks_per_rev = 537.6;
+    public final double ticks_per_rev = 537.6;
 
     /**
      * This function is executed when this OpMode is selected from the Driver Station.
@@ -72,15 +71,13 @@ public class magic extends LinearOpMode {
         hand = hardwareMap.get(Servo.class, "hand");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        riggingsupport = hardwareMap.get(Servo.class, "riggingsupport");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         controller = new PIDController(p, i, d);
-        telemetry.addData("pos", leftSlide.getCurrentPosition());
-        telemetry.update();
+
 
 
         //////////////////////////////////////////////////////////////////
@@ -89,7 +86,6 @@ public class magic extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             drone.setPosition(0);
-            riggingsupport.setPosition(0.56);
             leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
             leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
             leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -98,28 +94,34 @@ public class magic extends LinearOpMode {
             rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
+
             while (opModeIsActive()) {
+
 
                 int s = 1;
                 int startpos = 0;
                 int rightfullyex = -2000;
                 int leftfullyex = 2000;
 
+                telemetry.addData("pos", leftSlide.getCurrentPosition());
+                telemetry.update();
+
                 if (gamepad1.y) {
-                    leftSlide.setTargetPosition(leftfullyex);
-                    rightSlide.setTargetPosition(rightfullyex);
-                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    controller.setPID(p, i, d);
-                    int slidePos = leftSlide.getCurrentPosition();
-                    double pid = controller.calculate(slidePos, leftfullyex);
-                    double ff = Math.cos(Math.toRadians(leftfullyex / ticks_per_rev)) * f;
+                    //if (leftSlide.getCurrentPosition() = ) {
+                        leftSlide.setTargetPosition(leftfullyex);
+                        rightSlide.setTargetPosition(rightfullyex);
+                        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        controller.setPID(p, i, d);
+                        int slidePos = leftSlide.getCurrentPosition();
+                        double pid = controller.calculate(slidePos, leftfullyex);
+                        double ff = Math.cos(Math.toRadians(leftfullyex / ticks_per_rev)) * f;
 
-                    double power = pid + ff;
+                        double power = pid + ff;
 
-                    leftSlide.setPower(power);
-                    rightSlide.setPower(power);
-
+                        leftSlide.setPower(power);
+                        rightSlide.setPower(power);
+                   // }
                 } else if (gamepad1.x) {
                     leftSlide.setTargetPosition(startpos);
                     rightSlide.setTargetPosition(startpos);
