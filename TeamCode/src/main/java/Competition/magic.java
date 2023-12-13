@@ -163,7 +163,7 @@ public class magic extends LinearOpMode {
                         rightClaw.setPosition(0);
                         Thread.sleep(750);
                     } else if (rightClaw.getPosition() == 0) {
-                        rightClaw.getPosition(1);
+                        rightClaw.setPosition(1);
                         Thread.sleep(750);
                     }
                     rightSlide.setTargetPosition(rightSlide.getCurrentPosition() - 100);
