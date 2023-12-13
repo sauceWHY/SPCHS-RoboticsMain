@@ -79,7 +79,8 @@ public class magic extends LinearOpMode {
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         controller = new PIDController(p, i, d);
-
+        telemetry.addData("pos", leftSlide.getCurrentPosition());
+        telemetry.update();
 
 
         //////////////////////////////////////////////////////////////////
@@ -93,23 +94,26 @@ public class magic extends LinearOpMode {
             leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
             leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
             while (opModeIsActive()) {
 
                 int s = 1;
                 int startpos = 0;
-                int fullyex = -3500;
+                int rightfullyex = -2000;
+                int leftfullyex = 2000;
 
                 if (gamepad1.y) {
-                    leftSlide.setTargetPosition(fullyex);
-                    rightSlide.setTargetPosition(fullyex);
+                    leftSlide.setTargetPosition(leftfullyex);
+                    rightSlide.setTargetPosition(rightfullyex);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     controller.setPID(p, i, d);
                     int slidePos = leftSlide.getCurrentPosition();
-                    double pid = controller.calculate(slidePos, fullyex);
-                    double ff = Math.cos(Math.toRadians(fullyex / ticks_per_rev)) * f;
+                    double pid = controller.calculate(slidePos, leftfullyex);
+                    double ff = Math.cos(Math.toRadians(leftfullyex / ticks_per_rev)) * f;
 
                     double power = pid + ff;
 
@@ -130,6 +134,14 @@ public class magic extends LinearOpMode {
 
                     leftSlide.setPower(power);
                     rightSlide.setPower(power);
+                } else if (gamepad1.right_trigger > 0) {
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
+                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    leftSlide.setPower(1);
+                } else if (gamepad1.left_trigger > 0) {
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
+                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    leftSlide.setPower(1);
                 }
 
 
@@ -147,7 +159,7 @@ public class magic extends LinearOpMode {
 
                 double y = -gamepad2.left_stick_y; // Remember, Y stick value is reversed
                 double x = gamepad2.left_stick_x; // Counteract imperfect strafing
-                double rx = gamepad2.right_stick_x * 0.69;
+                double rx = gamepad2.right_stick_x * 0.59;
 
                 // Denominator is the largest motor power (absolute value) or 1
                 // This ensures all the powers maintain the same ratio,
@@ -160,19 +172,21 @@ public class magic extends LinearOpMode {
                 double backRightPower = ((y + x - rx) * s) / denominator;
 
 
-                leftFront.setPower(frontLeftPower );
-                leftRear.setPower(backLeftPower );
-                rightFront.setPower(frontRightPower );
-                rightRear.setPower(backRightPower );
 
-                /*for(double i = .1; i <= 1; i += 0.15) {
+
+                for(double i = .5; i <= 1; i += 0.08) {
 
                     double h = i*100;
                     i = h/100;
 
+                    Thread.sleep(1/100000000);
 
+                    leftFront.setPower(frontLeftPower * i);
+                    leftRear.setPower(backLeftPower * i);
+                    rightFront.setPower(frontRightPower * i);
+                    rightRear.setPower(backRightPower * i);
                 }
-*/
+
 
 
                 if (gamepad1.a){
