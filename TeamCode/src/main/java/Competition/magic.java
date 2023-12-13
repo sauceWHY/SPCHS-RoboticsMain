@@ -57,6 +57,7 @@ public class magic extends LinearOpMode {
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
 
+
     /**
      * This function is executed when this OpMode is selected from the Driver Station.
      */
@@ -94,20 +95,19 @@ public class magic extends LinearOpMode {
             leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
             leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
 
 
             while (opModeIsActive()) {
 
 
                 int s = 1;
-                int startpos = 0;
-                int rightfullyex = -2000;
-                int leftfullyex = 2000;
+                int startpos = 50;
+                int rightfullyex = 5700;
+                int leftfullyex = 5700;
 
-                telemetry.addData("pos", leftSlide.getCurrentPosition());
+                telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
+                telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
+                telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
                 telemetry.update();
 
                 if (gamepad1.y) {
@@ -144,6 +144,9 @@ public class magic extends LinearOpMode {
                     leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
+                    rightSlide.setTargetPosition(rightSlide.getCurrentPosition() + 100);
+                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightSlide.setPower(1);
                 } else if (gamepad1.left_trigger > 0) {
                     leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -163,7 +166,9 @@ public class magic extends LinearOpMode {
                         rightClaw.getPosition(1);
                         Thread.sleep(750);
                     }
-
+                    rightSlide.setTargetPosition(rightSlide.getCurrentPosition() - 100);
+                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightSlide.setPower(1);
                 }
 
 
