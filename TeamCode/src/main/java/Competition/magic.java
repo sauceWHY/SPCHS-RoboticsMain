@@ -37,6 +37,8 @@ public class magic extends LinearOpMode {
     public static DcMotorEx rightSlide;
     public static double h = .7;
     public static Servo hand;
+    public static Servo leftClaw;
+    public static Servo rightClaw;
     public static double k = 0.3;
     //  public static double x = 0.4;
     public static int c = 0;
@@ -71,6 +73,8 @@ public class magic extends LinearOpMode {
         hand = hardwareMap.get(Servo.class, "hand");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
@@ -144,6 +148,22 @@ public class magic extends LinearOpMode {
                     leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
+                } else if (gamepad1.a) {
+                    if (leftClaw.getPosition() == 1) {
+                        leftClaw.setPosition(0);
+                        Thread.sleep(750);
+                    } else if (leftClaw.getPosition() == 0) {
+                        leftClaw.setPosition(1);
+                    }
+                } else if (gamepad1.b){
+                    if (rightClaw.getPosition() == 1) {
+                        rightClaw.setPosition(0);
+                        Thread.sleep(750);
+                    } else if (rightClaw.getPosition() == 0) {
+                        rightClaw.getPosition(1);
+                        Thread.sleep(750);
+                    }
+
                 }
 
 
