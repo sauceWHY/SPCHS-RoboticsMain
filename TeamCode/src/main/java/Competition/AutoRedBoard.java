@@ -39,6 +39,9 @@ public class AutoRedBoard extends LinearOpMode {
     TrajectorySequence rightTape;
     public static DcMotorEx leftSlide;
     public static DcMotorEx rightSlide;
+    public static Servo leftClaw;
+    public static Servo rightClaw;
+
 
     @Override
     public void runOpMode() {
@@ -52,6 +55,8 @@ public class AutoRedBoard extends LinearOpMode {
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
 
         int s = 1;
         int startpos = 0;
