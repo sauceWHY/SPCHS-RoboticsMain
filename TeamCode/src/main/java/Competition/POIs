@@ -1,13 +1,13 @@
-red board middle: (49.5,-32.8)  =>  (32.8 , -110.5)
-red board left: (49.5, -24.9)  =>  (24.9 , -110.5)
-red board right: (49.5, -39.1)  =>  (39.1 , -110.5)
+red board middle: (49.5,-32.8)  =>  (-44.2,-65.5)
+red board left: (49.5, -24.9)  =>  (-37.9,-65.5)
+red board right: (49.5, -39.1)  =>  (-52.1,-65.5)
 
-red board starting pos: (16, -61)
-red starting pos: (-36.2, -61)
+red board starting pos: (-61, -16)
+red starting pos: (-61, 36.2)
 
-blue board middle: (49.5, 32.8)  =>  (32.8 , 11.5)
-blue board left: (49.5, 24.9)  =>  (24.9 , 11.5)
-blue board right: (49.5, 39.1)  =>  (39.1 , 11.5)
+blue board middle: (49.5, 32.8)  =>  =>  (44.2,-65.5)
+blue board left: (49.5, 24.9)  =>  (37.9,-65.5)
+blue board right: (49.5, 39.1)  =>  (52.1,-65.5)
 
-blue board starting pos: (16, 61)
-blue starting pos: (-36.2, 61)
+blue board starting pos: (61, -16)
+blue starting pos: (61, 36.2)

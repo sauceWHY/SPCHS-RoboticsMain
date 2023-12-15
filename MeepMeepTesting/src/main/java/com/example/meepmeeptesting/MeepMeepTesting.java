@@ -14,10 +14,12 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(16, -61, Math.toRadians(90)))
-                                .lineToLinearHeading(new Pose2d(16, -44.2, Math.toRadians(0))) //middle tape
-                                .splineToSplineHeading(new Pose2d(25,-60.2,Math.toRadians(0)), Math.toRadians(270) - Math.toRadians(0))
-                                .splineToLinearHeading(new Pose2d(65.5,-44.2,Math.toRadians(0)), Math.toRadians(0))
+                        drive.trajectorySequenceBuilder(new Pose2d(-61, -16, Math.toRadians(90)))
+                                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //right tape
+                                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) // dodges prop
+                                .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(0)), Math.toRadians(0)) // right side of board
+                                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0))) //parking
+                                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
                                 .build()
                 );
 
