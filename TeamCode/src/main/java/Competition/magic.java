@@ -22,8 +22,6 @@ import java.lang.Math;
 @TeleOp(name = "main", group = "Competition")
 public class magic extends LinearOpMode {
 
-    public static int rdirection = 1;
-    public static int ldirection = -1;
     public static DcMotor rightFront;
     public static DcMotor leftFront;
     public static DcMotor leftRear;
@@ -41,18 +39,9 @@ public class magic extends LinearOpMode {
     public static Servo leftWrist;
     public static Servo rightWrist;
     public static double k = 0.3;
-    //  public static double x = 0.4;
     public static int c = 0;
     public static double b = 0.5;
-    public static double r = 0.56;
     public static double s;
-
-
-
-    double frontLeftPower;
-    double backLeftPower;
-    double frontRightPower;
-    double backRightPower;
     public static PIDController controller;
     public static double p=0.003, i=0, d=0.00015;
     public static double f = 0.08;
@@ -216,10 +205,10 @@ public class magic extends LinearOpMode {
                 // but only if at least one is out of the range [-1, 1]
 
                 double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-                double frontLeftPower = ((y + x + rx) * s) / denominator;
-                double backLeftPower = ((y - x + rx) * s) / denominator;
-                double frontRightPower = ((y - x - rx) * s) / denominator;
-                double backRightPower = ((y + x - rx) * s) / denominator;
+                double frontLeftPower = ((y + x + rx)) / denominator;
+                double backLeftPower = ((y - x + rx)) / denominator;
+                double frontRightPower = ((y - x - rx)) / denominator;
+                double backRightPower = ((y + x - rx)) / denominator;
 
 
 
