@@ -30,7 +30,7 @@ public class DriveConstants {
      * If using the built-in motor velocity PID, update MOTOR_VELO_PID with the tuned coefficients
      * from DriveVelocityPIDTuner.
      */
-    public static final boolean RUN_USING_ENCODER = true;
+    public static final boolean RUN_USING_ENCODER = false;
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(20, 0, 10, 13.352599865580424);
 
 
@@ -44,7 +44,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 2; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 13.12; // in
+    public static double TRACK_WIDTH = 23; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -52,8 +52,8 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
-    public static double kA = 0;
+    public static double kV = 0.016103359912682245;
+    public static double kA = 0.002;
     public static double kStatic = 0;
 
     /*
@@ -65,14 +65,14 @@ public class DriveConstants {
      */
     public static double MAX_VEL = 54.9;
     public static double MAX_ACCEL = 54.9;
-    public static double MAX_ANG_VEL = Math.toRadians(180);
-    public static double MAX_ANG_ACCEL = Math.toRadians(180);
+    public static double MAX_ANG_VEL = Math.toRadians(90);
+    public static double MAX_ANG_ACCEL = Math.toRadians(90);
 
     /*
      * Adjust the orientations here to match your robot. See the FTC SDK documentation for details.
      */
     public static RevHubOrientationOnRobot.LogoFacingDirection LOGO_FACING_DIR =
-            RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
+            RevHubOrientationOnRobot.LogoFacingDirection.UP;
     public static RevHubOrientationOnRobot.UsbFacingDirection USB_FACING_DIR =
             RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 

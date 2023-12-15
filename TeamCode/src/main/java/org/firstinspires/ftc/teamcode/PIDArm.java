@@ -21,8 +21,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 @TeleOp
 public class PIDArm extends OpMode {
     private PIDController controller;
-    public static double p=0, i=0, d=0;
-    public static double f = 0;
+    public static double p=0.003, i=0, d=0.00015;
+    public static double f = 0.08;
 
     public static int target = 0;
     private final double ticks_per_rev = 537.6;

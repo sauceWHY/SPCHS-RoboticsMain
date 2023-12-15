@@ -3,12 +3,14 @@ package Competition;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -22,8 +24,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutoRedBoard", group = "Competition")
 public class AutoRedBoard extends LinearOpMode {
-    private static Servo hand;
-    private static Servo arm;
+    private static ServoImplEx leftClaw;
+    private static ServoImplEx rightClaw;
     private static DcMotor armmotor;
     private static final int CAMERA_WIDTH  = 640; // width  of camera resolution
     private static final int CAMERA_HEIGHT = 480; // height of camera resolution
@@ -39,22 +41,39 @@ public class AutoRedBoard extends LinearOpMode {
     TrajectorySequence rightTape;
     public static DcMotorEx leftSlide;
     public static DcMotorEx rightSlide;
+    public static PIDController controller;
+    public static double p=0.003, i=0, d=0.00015;
+    public static double f = 0.08;
+    public final double ticks_per_rev = 537.6;
+    public int startingPosArm = -300;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException{
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        hand = hardwareMap.get(Servo.class, "hand");
-        arm = hardwareMap.get(Servo.class, "arm"); //wrist
+       // leftClaw = hardwareMap.get(ServoImplEx.class, "leftClaw");
+        //rightClaw = hardwareMap.get(ServoImplEx.class, "rightClaw"); //wrist
         armmotor = hardwareMap.get(DcMotor.class, "armmotor");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rightSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        armmotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        controller = new PIDController(p, i, d);
+        if (armmotor.getCurrentPosition() >= -5) { //sets the arms starting position using pid
+            armmotor.setTargetPosition(startingPosArm);
+            armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            controller.setPID(p, i, d);
+            int slidePos = armmotor.getCurrentPosition();
+            double pid = controller.calculate(slidePos, startingPosArm);
+            double ff = Math.cos(Math.toRadians(startingPosArm / ticks_per_rev)) * f;
+
+            double power = pid + ff;
+            armmotor.setPower(power);
+        }
+
 
         int s = 1;
-        int startpos = 0;
+        int startpos = 50;
         int rightfullyex = -2000;
         int leftfullyex = 2000;
         // OpenCV webcam
@@ -99,155 +118,25 @@ public class AutoRedBoard extends LinearOpMode {
             Assuming you start at (0,0) at the start of the program, the robot with move to the coordinates labeled at an 120 degree heading
          */
 
-        if(myPipeline.getRectArea() > 2000){
-            if(myPipeline.getRectMidpointX() > 400){ //right side prop
-                telemetry.addLine("Autonomous Right");
-                telemetry.update();
-                webcam.stopStreaming();
-                drive.followTrajectorySequence(rightTape);
-
-            } else if(myPipeline.getRectMidpointX() > 200){ //middle prop
-                telemetry.addLine("Autonomous Center");
-                telemetry.update();
-                webcam.stopStreaming();
-                drive.followTrajectorySequence(middleTape);
-
-            } else { //left prop
-                telemetry.addLine("Autonomous Left");
-                telemetry.update();
-                webcam.stopStreaming();
-                drive.followTrajectorySequence(leftTape);
-            }
-
-        }
-
-        Pose2d startPose = new Pose2d(0, 0, 0);
-
-        drive.setPoseEstimate(startPose);
-
-                leftTape = drive.trajectorySequenceBuilder(startPose)
- //                       .addTemporalMarker(() -> hand.setPosition(.8))
- //                       .addTemporalMarker(() -> arm.setPosition(.8))
-                        .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
-                        .lineTo(new Vector2d(34,-37))
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> {
-                            armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            armmotor.setTargetPosition(3500);
-                            armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            armmotor.setPower(1);
-                        }) //moves the arm to the drop the pixel on the backboard
-                        .waitSeconds(2.5)
-                        .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                        .waitSeconds(5)
-                        .build();
-                middleTape = drive.trajectorySequenceBuilder(startPose)
-                        .addTemporalMarker(() -> hand.setPosition(.8))
-                        .addTemporalMarker(() -> arm.setPosition(.8))
-                        .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
-                        .lineTo(new Vector2d(26,-35))
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> {
-                            armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            armmotor.setTargetPosition(3500);
-                            armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            armmotor.setPower(1);
-                        }) //moves the arm to the drop the pixel on the backboard
-                        .waitSeconds(2.5)
-                        .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                        .waitSeconds(5)
-                        .build();
-                rightTape = drive.trajectorySequenceBuilder(startPose)
-                        .addTemporalMarker(() -> hand.setPosition(.8))
-                        .addTemporalMarker(() -> arm.setPosition(.8))
-                        .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
-                        .lineTo(new Vector2d(22,-35))
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> {
-                            armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            armmotor.setTargetPosition(3500);
-                            armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            armmotor.setPower(1);
-                        }) //moves the arm to the drop the pixel on the backboard
-                        .waitSeconds(2.5)
-                        .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                        .waitSeconds(.5)
-                        .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                        .waitSeconds(5)
-                        .build();
 
 
+        Pose2d startPoseRedBB = new Pose2d(16, -61, Math.toRadians(90));
+        Pose2d startPoseBlueBB = new Pose2d(0, 0, Math.toRadians(0));
+        Pose2d startPoseBlue = new Pose2d(0, 0, Math.toRadians(0));
+        Pose2d startPoseRed = new Pose2d(0, 0, Math.toRadians(0));
 
+        drive.setPoseEstimate(startPoseRedBB);
 
-
-
-
-        waitForStart();
-
-        if(isStopRequested()) return;
-
-
-
-
-
-
-        /*TrajectorySequence genesis = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(0)))//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
-                .addTemporalMarker(() -> hand.setPosition(.8))
-                .addTemporalMarker(() -> arm.setPosition(.8))
+        TrajectorySequence genesis = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(0)))//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
                 .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
                 .lineTo(new Vector2d(22,-35))
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> {
-                    armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    armmotor.setTargetPosition(3500);
-                    armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    armmotor.setPower(1);
-                }) //moves the arm to the drop the pixel on the backboard
-                .waitSeconds(2.5)
-                .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                .waitSeconds(5)
                 .build();
         TrajectorySequence wowie = drive.trajectorySequenceBuilder(new Pose2d(0,0,Math.toRadians(0)))//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
-                .addTemporalMarker(() -> hand.setPosition(.8))
-                .addTemporalMarker(() -> arm.setPosition(.8))
                 .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
-                .lineTo(new Vector2d(26,-35))
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> {
-                    armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    armmotor.setTargetPosition(3500);
-                    armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    armmotor.setPower(1);
-                }) //moves the arm to the drop the pixel on the backboard
-                .waitSeconds(2.5)
-                .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                .waitSeconds(5)
                 .build();
-        TrajectorySequence dome = drive.trajectorySequenceBuilder(new Pose2d(0,0, Math.toRadians(0)))
-                .addTemporalMarker(() -> hand.setPosition(.8))
-                .addTemporalMarker(() -> arm.setPosition(.8))
-                .lineToLinearHeading(new Pose2d(10,-35,Math.toRadians(270)))
-                .lineTo(new Vector2d(34,-37))
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> {
-                    armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    armmotor.setTargetPosition(3500);
-                    armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    armmotor.setPower(1);
-                }) //moves the arm to the drop the pixel on the backboard
-                .waitSeconds(2.5)
-                .addTemporalMarker(() -> arm.setPosition(.5)) //snaps the wrist to the front
-                .waitSeconds(.5)
-                .addTemporalMarker(() -> hand.setPosition(.2)) // opens the claw
-                .waitSeconds(5)
+
+        TrajectorySequence dome = drive.trajectorySequenceBuilder(startPoseRedBB)
+                .lineToLinearHeading(new Pose2d(49.5,-61,Math.toRadians(0)))
                 .build();
 
         waitForStart();
@@ -273,7 +162,9 @@ public class AutoRedBoard extends LinearOpMode {
                 webcam.stopStreaming();
                 drive.followTrajectorySequence(dome);
             }
-        }*/
+        }
+        waitForStart();
 
+        isStopRequested();
     }
 }

@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PIDArm;
-import org.firstinspires.ftc.teamcode.PIDSlide;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.lang.Math;
@@ -37,8 +36,6 @@ public class magic extends LinearOpMode {
     public static DcMotorEx rightSlide;
     public static double h = .7;
     public static Servo hand;
-    public static Servo leftClaw;
-    public static Servo rightClaw;
     public static double k = 0.3;
     //  public static double x = 0.4;
     public static int c = 0;
@@ -67,18 +64,22 @@ public class magic extends LinearOpMode {
         leftFront = hardwareMap.get(DcMotor.class, "leftFront");
         leftRear = hardwareMap.get(DcMotor.class, "leftRear");
         rightRear = hardwareMap.get(DcMotor.class, "rightRear");
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armmotor = hardwareMap.get(DcMotor.class, "armmotor");
         intakemotor = hardwareMap.get(DcMotor.class, "intakemotor");
         drone = hardwareMap.get(Servo.class, "drone");
-        arm = hardwareMap.get(Servo.class, "arm"); //wrist
-        hand = hardwareMap.get(Servo.class, "hand");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
-        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         controller = new PIDController(p, i, d);
@@ -91,26 +92,26 @@ public class magic extends LinearOpMode {
         waitForStart();
         if (opModeIsActive()) {
             drone.setPosition(0);
-            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
             while (opModeIsActive()) {
 
 
                 int s = 1;
-                int startpos = 50;
+                int startpos1 = 50;
+                int startpos2 = -50;
                 int rightfullyex = 5700;
-                int leftfullyex = 5700;
+                int leftfullyex = -5700;
+                int hangingarmpos = -4000;
+                int backboardangle = -300;
+
 
                 telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
                 telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
                 telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
                 telemetry.update();
 
-                if (gamepad1.y) {
+                if (gamepad1.right_bumper) {
                     //if (leftSlide.getCurrentPosition() = ) {
                         leftSlide.setTargetPosition(leftfullyex);
                         rightSlide.setTargetPosition(rightfullyex);
@@ -126,56 +127,61 @@ public class magic extends LinearOpMode {
                         leftSlide.setPower(power);
                         rightSlide.setPower(power);
                    // }
-                } else if (gamepad1.x) {
-                    leftSlide.setTargetPosition(startpos);
-                    rightSlide.setTargetPosition(startpos);
+                } else if (gamepad1.left_bumper) {
+                    leftSlide.setTargetPosition(startpos2);
+                    rightSlide.setTargetPosition(startpos1);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     controller.setPID(p, i, d);
                     int slidePos = leftSlide.getCurrentPosition();
-                    double pid = controller.calculate(slidePos, startpos);
-                    double ff = Math.cos(Math.toRadians(startpos / ticks_per_rev)) * f;
+                    double pid = controller.calculate(slidePos, startpos2);
+                    double ff = Math.cos(Math.toRadians(startpos2 / ticks_per_rev)) * f;
 
                     double power = pid + ff;
 
                     leftSlide.setPower(power);
                     rightSlide.setPower(power);
-                } else if (gamepad1.right_trigger > 0) {
-                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
-                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                } else if (gamepad1.dpad_up) {
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
+                    leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
                     rightSlide.setTargetPosition(rightSlide.getCurrentPosition() + 100);
-                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     rightSlide.setPower(1);
-                } else if (gamepad1.left_trigger > 0) {
-                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
-                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                } else if (gamepad1.dpad_down) {
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
+                    leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
-                } else if (gamepad1.a) {
-                    if (leftClaw.getPosition() == 1) {
-                        leftClaw.setPosition(0);
-                        Thread.sleep(750);
-                    } else if (leftClaw.getPosition() == 0) {
-                        leftClaw.setPosition(1);
-                    }
-                } else if (gamepad1.b){
-                    if (rightClaw.getPosition() == 1) {
-                        rightClaw.setPosition(0);
-                        Thread.sleep(750);
-                    } else if (rightClaw.getPosition() == 0) {
-                        rightClaw.setPosition(1);
-                        Thread.sleep(750);
-                    }
                     rightSlide.setTargetPosition(rightSlide.getCurrentPosition() - 100);
-                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     rightSlide.setPower(1);
+                } else if (gamepad1.y) {
+                    armmotor.setTargetPosition(hangingarmpos);
+                    armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                    controller.setPID(p, i, d);
+                    int slidePos = armmotor.getCurrentPosition();
+                    double pid = controller.calculate(slidePos, hangingarmpos);
+                    double ff = Math.cos(Math.toRadians(hangingarmpos / ticks_per_rev)) * f;
+
+                    double power = pid + ff;
+
+                    armmotor.setPower(power);
+                } else if (gamepad1.x) {
+                    armmotor.setTargetPosition(backboardangle);
+                    armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                    controller.setPID(p, i, d);
+                    int slidePos = armmotor.getCurrentPosition();
+                    double pid = controller.calculate(slidePos, backboardangle);
+                    double ff = Math.cos(Math.toRadians(backboardangle / ticks_per_rev)) * f;
+
+                    double power = pid + ff;
+
+                    armmotor.setPower(power);
                 }
 
 
                 //////////////////////////////////////////////////////////////
 
-                armmotor.setPower(gamepad1.right_stick_y);
-                armmotor.setDirection(DcMotorSimple.Direction.REVERSE);
                 if (0.4 <= (h - (-gamepad1.left_stick_y/1000)) && (h - (-gamepad1.left_stick_y/1000)) <= 1){
                     h = h - (-gamepad1.left_stick_y/1000);
                 }
@@ -214,14 +220,6 @@ public class magic extends LinearOpMode {
                     rightRear.setPower(backRightPower * i);
                 }
 
-
-
-                if (gamepad1.a){
-                    k = .7;
-                }
-                if (gamepad1.b){
-                    k = .3;
-                }
                 if (gamepad2.x){
                     c = c+1;
                     if (c == 1000){
