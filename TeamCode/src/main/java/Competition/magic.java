@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PIDArm;
+import org.firstinspires.ftc.teamcode.PIDSlide;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.lang.Math;
@@ -36,6 +37,10 @@ public class magic extends LinearOpMode {
     public static DcMotorEx rightSlide;
     public static double h = .7;
     public static Servo hand;
+    public static Servo leftClaw;
+    public static Servo rightClaw;
+    public static Servo leftWrist;
+    public static Servo rightWrist;
     public static double k = 0.3;
     //  public static double x = 0.4;
     public static int c = 0;
@@ -75,11 +80,13 @@ public class magic extends LinearOpMode {
         drone = hardwareMap.get(Servo.class, "drone");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftWrist = hardwareMap.get(Servo.class, "left Wrist");
+        rightWrist = hardwareMap.get(Servo.class, "rightWrist");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         controller = new PIDController(p, i, d);
@@ -93,18 +100,15 @@ public class magic extends LinearOpMode {
         if (opModeIsActive()) {
             drone.setPosition(0);
 
-
             while (opModeIsActive()) {
 
 
-                int s = 1;
                 int startpos1 = 50;
                 int startpos2 = -50;
                 int rightfullyex = 5700;
                 int leftfullyex = -5700;
                 int hangingarmpos = -4000;
                 int backboardangle = -300;
-
 
                 telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
                 telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
