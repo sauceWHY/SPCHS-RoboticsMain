@@ -111,32 +111,47 @@ public class AutoRed extends LinearOpMode {
 
 
 
-        Pose2d startPoseRedBB = new Pose2d(-61, -16, Math.toRadians(90));
+        Pose2d startPoseRed = new Pose2d(-61, 36.2, Math.toRadians(0));
 
-        drive.setPoseEstimate(startPoseRedBB);
+        drive.setPoseEstimate(startPoseRed);
 
-        TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRed)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //right tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) // dodges prop
                 .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(0)), Math.toRadians(0)) // right side of board
                 .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0))) //parking
                 .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
                 .build();
-        TrajectorySequence rightTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
+        TrajectorySequence rightTapeParkRight = drive.trajectorySequenceBuilder(startPoseRed)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //right tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) // dodges prop
                 .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(0)), Math.toRadians(0)) // right side of board
                 .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(0))) //parking
                 .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(0)))
                 .build();
-        TrajectorySequence centerTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
+        TrajectorySequence centerTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRed)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //middle tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
                 .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(0)), Math.toRadians(0)) //middle of board
                 .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0)))
                 .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
                 .build();
-        TrajectorySequence centerTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
+        TrajectorySequence centerTapeParkRight = drive.trajectorySequenceBuilder(startPoseRed)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //middle tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
                 .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(0)), Math.toRadians(0)) //middle of board
@@ -144,14 +159,21 @@ public class AutoRed extends LinearOpMode {
                 .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence leftTapeLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
+        
+        TrajectorySequence leftTapeLeft = drive.trajectorySequenceBuilder(startPoseRed)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //left tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
                 .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(0)), Math.toRadians(0)) //left of board
                 .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0)))
                 .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
                 .build();
-        TrajectorySequence leftTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)
+        
+        
+        TrajectorySequence leftTapeParkRight = drive.trajectorySequenceBuilder(startPoseRed)
+        
+        
                 .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //left tape
                 .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
                 .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(0)), Math.toRadians(0)) //left of board

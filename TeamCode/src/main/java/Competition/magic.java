@@ -214,6 +214,25 @@ public class magic extends LinearOpMode {
                     rightFront.setPower(frontRightPower * i);
                     rightRear.setPower(backRightPower * i);
                 }
+                /*
+                double theta = Math.atan2(y,x);
+                double power = Math.hypot(x,y);
+                double sin = Math.sin(theta - Math.PI/4);
+                double cos = Math.cos(theta - Math.PI/4);
+                double max = Math.max(Math.abs(sin), Math.abs(cos));
+                double leftFrontPower = power * cos/max + rx;
+                double rightFrontPower = power * sin/max - rx;
+                double leftRearPower = power * sin/max + rx;
+                double rightRearPower = power * cos/max - rx;
+
+                if ((power + Math.abs(rx)) > 1) {
+                    leftFrontPower /= power + rx;
+                    rightFrontPower /= power + rx;
+                    leftRearPower /= power + rx;
+                    rightRearPower /= power + rx;
+                }
+                */
+
             }
         }
     }

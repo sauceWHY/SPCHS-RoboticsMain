@@ -1,6 +1,7 @@
 package Competition;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -23,6 +24,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
+import java.util.Vector;
+
 @Autonomous(name = "AutoRedBoard", group = "Competition")
 public class AutoRedBoard extends LinearOpMode {
     private static ServoImplEx leftClaw;
@@ -43,13 +46,6 @@ public class AutoRedBoard extends LinearOpMode {
     public static double p=0.003, i=0, d=0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
-    int s = 1;
-    int startposrightslide = 50;
-    int startposleftslide = -50;
-    int rightfullyex = 5700;
-    int leftfullyex = -5700;
-    int pixelTapeAngle = -3500;
-    int BackBoardAngle = -300;
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -112,7 +108,7 @@ public class AutoRedBoard extends LinearOpMode {
 
 
 
-        Pose2d startPoseRedBB = new Pose2d(-61, -16, Math.toRadians(90));
+        Pose2d startPoseRedBB = new Pose2d(-61, -16, Math.toRadians(0));
 
         drive.setPoseEstimate(startPoseRedBB);
 
@@ -120,11 +116,14 @@ public class AutoRedBoard extends LinearOpMode {
         int slideFullEx = 5700;
         int slideStartPos = 50;
 
+
         TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
                 .addDisplacementMarker(() -> {
                     Subsytems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //right tape
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(270))) //right tape
                 .addDisplacementMarker(() -> {
                     Subsytems.syncedSlides(slideFullEx);
                 })
@@ -133,75 +132,24 @@ public class AutoRedBoard extends LinearOpMode {
                     Subsytems.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) // dodges prop
-                .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(0)), Math.toRadians(0)) // right side of board
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) // dodges prop
+                .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(270)), Math.toRadians(0)) // right side of board
                 .addDisplacementMarker(() -> {
                     Subsytems.syncedSlides(slideFullEx);
                 })
                 .waitSeconds(6)
-                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0))) //parking
-                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
-                .build();
-        TrajectorySequence rightTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)
-                .addDisplacementMarker(() -> {
-                    Subsytems.armPosition(pixelArmAngle);
-                })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //right tape
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideFullEx);
-                })
-                .waitSeconds(5)
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideStartPos);
-                })
-                .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) // dodges prop
-                .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(0)), Math.toRadians(0)) // right side of board
-                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(0))) //parking
-                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(0)))
-                .build();
-        TrajectorySequence centerTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
-                .addDisplacementMarker(() -> {
-                    Subsytems.armPosition(pixelArmAngle);
-                })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //middle tape
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideFullEx);
-                })
-                .waitSeconds(5)
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideStartPos);
-                })
-                .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
-                .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(0)), Math.toRadians(0)) //middle of board
-                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0)))
-                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
-                .build();
-        TrajectorySequence centerTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
-                .addDisplacementMarker(() -> {
-                    Subsytems.armPosition(pixelArmAngle);
-                })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //middle tape
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideFullEx);
-                })
-                .waitSeconds(5)
-                .addDisplacementMarker(() -> {
-                    Subsytems.syncedSlides(slideStartPos);
-                })
-                .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
-                .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(0)), Math.toRadians(0)) //middle of board
-                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(0)))
-                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(270))) //parking
+                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(270)))
                 .build();
 
-        TrajectorySequence leftTapeLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+        TrajectorySequence rightTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
                 .addDisplacementMarker(() -> {
                     Subsytems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(180))) //left tape
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(270))) //right tape
                 .addDisplacementMarker(() -> {
                     Subsytems.syncedSlides(slideFullEx);
                 })
@@ -210,16 +158,20 @@ public class AutoRedBoard extends LinearOpMode {
                     Subsytems.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
-                .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(0)), Math.toRadians(0)) //left of board
-                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(0)))
-                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(0)))
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) // dodges prop
+                .splineToLinearHeading(new Pose2d(-52.1,-65.5,Math.toRadians(270)), Math.toRadians(0)) // right side of board
+                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(270))) //parking
+                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(270)))
                 .build();
-        TrajectorySequence leftTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
+        TrajectorySequence centerTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
                 .addDisplacementMarker(() -> {
                     Subsytems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(180))) //left tape
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //middle tape
                 .addDisplacementMarker(() -> {
                     Subsytems.syncedSlides(slideFullEx);
                 })
@@ -228,10 +180,77 @@ public class AutoRedBoard extends LinearOpMode {
                     Subsytems.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-57,-30,Math.toRadians(0)), Math.toRadians(270)) //dodges prop
-                .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(0)), Math.toRadians(0)) //left of board
-                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(0)))
-                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(0)))
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) //dodges prop
+                .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(270)), Math.toRadians(0)) //middle of board
+                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(270)))
+                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(270)))
+                .build();
+
+
+        TrajectorySequence centerTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+
+
+                .addDisplacementMarker(() -> {
+                    Subsytems.armPosition(pixelArmAngle);
+                })
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(0))) //middle tape
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideFullEx);
+                })
+                .waitSeconds(5)
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideStartPos);
+                })
+                .waitSeconds(0.5)
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) //dodges prop
+                .splineToLinearHeading(new Pose2d(-44.2,-65.5,Math.toRadians(270)), Math.toRadians(0)) //middle of board
+                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(270)))
+                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(270)))
+                .build();
+
+
+        TrajectorySequence leftTapeLeft = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
+                .addDisplacementMarker(() -> {
+                    Subsytems.armPosition(pixelArmAngle);
+                })
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //left tape
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideFullEx);
+                })
+                .waitSeconds(5)
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideStartPos);
+                })
+                .waitSeconds(0.5)
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) //dodges prop
+                .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(270)), Math.toRadians(0)) //left of board
+                .lineToLinearHeading(new Pose2d(-32,-65.5, Math.toRadians(270)))
+                .lineToLinearHeading(new Pose2d(-32,-70.5,Math.toRadians(270)))
+
+                .build();
+
+
+        TrajectorySequence leftTapeParkRight = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+
+                .addDisplacementMarker(() -> {
+                    Subsytems.armPosition(pixelArmAngle);
+                })
+                .lineToLinearHeading(new Pose2d(-44.2, -16, Math.toRadians(90))) //left tape
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideFullEx);
+                })
+                .waitSeconds(5)
+                .addDisplacementMarker(() -> {
+                    Subsytems.syncedSlides(slideStartPos);
+                })
+                .waitSeconds(0.5)
+                .splineToConstantHeading(new Vector2d(-57,-30), Math.toRadians(270)) //dodges prop
+                .splineToLinearHeading(new Pose2d(-37.9,-65.5,Math.toRadians(270)), Math.toRadians(0)) //left of board
+                .lineToLinearHeading(new Pose2d(-59,-65.5, Math.toRadians(270)))
+                .lineToLinearHeading(new Pose2d(-59,-70.5,Math.toRadians(270)))
                 .build();
 
 
@@ -247,7 +266,7 @@ public class AutoRedBoard extends LinearOpMode {
                 telemetry.addData("heading" , drive.getPoseEstimate().getHeading());
                 telemetry.update();
 
-            } else if(myPipeline.getRectMidpointX() > 210){
+            } else if(myPipeline.getRectMidpointX() >= 210){
                 telemetry.addLine("Autonomous Center");
                 telemetry.update();
                 webcam.stopStreaming();
