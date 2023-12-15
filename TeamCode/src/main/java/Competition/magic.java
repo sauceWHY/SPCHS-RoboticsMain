@@ -39,6 +39,8 @@ public class magic extends LinearOpMode {
     public static Servo hand;
     public static Servo leftClaw;
     public static Servo rightClaw;
+    public static Servo leftWrist;
+    public static Servo rightWrist;
     public static double k = 0.3;
     //  public static double x = 0.4;
     public static int c = 0;
@@ -74,7 +76,8 @@ public class magic extends LinearOpMode {
         hand = hardwareMap.get(Servo.class, "hand");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftWrist
+        leftWrist = hardwareMap.get(Servo.class, "left Wrist");
+        rightWrist = hardwareMap.get(Servo.class, "rightWrist");
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         IMU imu = hardwareMap.get(IMU.class, "imu");
