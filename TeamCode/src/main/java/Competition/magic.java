@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.PIDArm;
-import org.firstinspires.ftc.teamcode.PIDSlide;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import java.lang.Math;
@@ -181,8 +180,22 @@ public class magic extends LinearOpMode {
                     double power = pid + ff;
 
                     armmotor.setPower(power);
-                }
-
+                } /*else if (gamepad1.a) {
+                    if (leftClaw.getPosition() == 1) {
+                        leftClaw.setPosition(0);
+                        Thread.sleep(750);
+                    } else if (leftClaw.getPosition() == 0) {
+                        leftClaw.setPosition(1);
+                    }
+                } else if (gamepad1.b){
+                    if (rightClaw.getPosition() == 1) {
+                        rightClaw.setPosition(0);
+                        Thread.sleep(750);
+                    } else if (rightClaw.getPosition() == 0) {
+                        rightClaw.setPosition(1);
+                        Thread.sleep(750);
+                    }
+*/
 
                 //////////////////////////////////////////////////////////////
 
