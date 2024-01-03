@@ -1,23 +1,29 @@
 package org.firstinspires.ftc.teamcode;
 
-import static Competition.magic.armmotor;
-import static Competition.magic.leftSlide;
-import static Competition.magic.rightSlide;
 
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
+import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
+import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
 
-public class Subsytems {
+public class Subsystems {
     public static PIDController controller;
     public static double p=0.003, i=0, d=0.00015;
     public static double f = 0.08;
     public static final double ticks_per_rev = 537.6;
+
+    public static void initialize() {
+        controller = new PIDController(p, i, d);
+
+    }
     public static void armPosition(int armTarget) {
         armmotor.setTargetPosition(armTarget);
         armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
-        int slidePos = armmotor.getCurrentPosition();
-        double pid = controller.calculate(slidePos, armTarget);
+        int armPos = armmotor.getCurrentPosition();
+        double pid = controller.calculate(armPos, armTarget);
         double ff = Math.cos(Math.toRadians(armTarget / ticks_per_rev)) * f;
 
         double power = pid + ff;
