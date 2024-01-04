@@ -317,7 +317,7 @@ public class AutoBlue extends LinearOpMode {
                     .waitSeconds(1)
                     .splineToSplineHeading(new Pose2d(-40.2,30, Math.toRadians(295)), Math.toRadians(280))
                     .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(0)), Math.toRadians(90))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(49.5,28.9, Math.toRadians(0)))
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideFullEx);
                     })
@@ -325,9 +325,11 @@ public class AutoBlue extends LinearOpMode {
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
-                    .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 60))
-                    .lineToConstantHeading(new Vector2d(54, 60))
+                    .waitSeconds(3)
+                    .lineToLinearHeading(new Pose2d(-51,34.8, Math.PI))
+
+                    //.lineToConstantHeading(new Vector2d(49.5, 60))
+                    //.lineToConstantHeading(new Vector2d(54, 60))
                     .build();
 
 
@@ -346,20 +348,21 @@ public class AutoBlue extends LinearOpMode {
 
                 }
             }
-        if (myPipeline.getRectArea() < 2000) {
 
-            if(!isPropDetected){
+            if (myPipeline.getRectArea() < 2000) {
 
-                webcam.stopRecordingPipeline();
+                if(!isPropDetected){
+
+                    webcam.stopRecordingPipeline();
+                    webcam.stopStreaming();
+
+                }
+
+                telemetry.addLine("Autonomous Right");
                 webcam.stopStreaming();
+                drive.followTrajectorySequence(rightTapeParkRight);
 
             }
-
-            telemetry.addLine("Autonomous Right");
-            webcam.stopStreaming();
-            drive.followTrajectorySequence(rightTapeParkRight);
-
-        }
 
 
             isStopRequested();
