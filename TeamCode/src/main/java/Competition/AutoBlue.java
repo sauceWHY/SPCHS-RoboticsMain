@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
@@ -27,6 +29,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutoBlue", group = "Competition")
 public class AutoBlue extends LinearOpMode {
+    private ElapsedTime runtime = new ElapsedTime();
     private static ServoImplEx leftClaw;
     private static ServoImplEx rightClaw;
     private static final int CAMERA_WIDTH = 640; // width  of camera resolution
@@ -54,6 +57,8 @@ public class AutoBlue extends LinearOpMode {
         armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         armmotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -111,6 +116,7 @@ public class AutoBlue extends LinearOpMode {
             telemetry.addData("x", drive.getPoseEstimate().getX());
             telemetry.addData("y", drive.getPoseEstimate().getY());
             telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();
         }
 
@@ -121,41 +127,44 @@ public class AutoBlue extends LinearOpMode {
 
             int pixelArmAngle = -2450;
             int backBoardAngle = -500;
-            int slideFullEx = 5700;
+            int slideCenter = 4700;
+            int slideRight = 4500;
+            int slideLeft = 4500;
             int slideStartPos = 50;
+            int slideBackBoard = 4700;
 
 
             TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseBlue)
 
-                    
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(pixelArmAngle);
                     })
                     .lineToConstantHeading(new Vector2d(-46.5,55))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideRight);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                    .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
-                    .waitSeconds(0.3)
+                    .waitSeconds(0.5)
                     .splineToSplineHeading(new Pose2d(-43.2,45, Math.toRadians(270)), Math.toRadians(0))
                     .splineToSplineHeading(new Pose2d(-33.2,22, Math.toRadians(270)), Math.toRadians(280))
-                    .splineToSplineHeading(new Pose2d(10,5, Math.toRadians(270)), Math.toRadians(0))
-                    .splineToSplineHeading(new Pose2d(49.5,32.8, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(10,5, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(46.5,28, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
                     .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 60))
+                    .lineToConstantHeading(new Vector2d(46.5, 60))
                     .lineToConstantHeading(new Vector2d(60, 60))
                     .build();
 
@@ -168,29 +177,30 @@ public class AutoBlue extends LinearOpMode {
                     })
                     .lineToConstantHeading(new Vector2d(-46.5,55))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideRight);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                    .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
                     .waitSeconds(0.5)
-                    .splineToSplineHeading(new Pose2d(-43.2,45, Math.toRadians(270)), Math.toRadians(0))
-                    .splineToSplineHeading(new Pose2d(-33.2,22, Math.toRadians(270)), Math.toRadians(280))
+                    .splineToConstantHeading(new Vector2d(-43.2,45), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(-33.2,12), Math.toRadians(280))
                     .splineToSplineHeading(new Pose2d(10,5, Math.toRadians(270)), Math.toRadians(0))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(46.5,28, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
                     .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 12))
+                    .lineToConstantHeading(new Vector2d(46.5, 12))
                     .lineToConstantHeading(new Vector2d(60, 12))
                     .build();
 
@@ -201,23 +211,24 @@ public class AutoBlue extends LinearOpMode {
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(pixelArmAngle);
                     })
-                .lineToLinearHeading(new Pose2d(-46.5,38, Math.toRadians(295)))
+                .lineToLinearHeading(new Pose2d(-47.5,38, Math.toRadians(295)))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideCenter);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
                     .waitSeconds(0.5)
-                    .splineToSplineHeading(new Pose2d(-50.2,30, Math.toRadians(295)), Math.toRadians(280))
-                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(0)), Math.toRadians(90))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(-50.2,20, Math.toRadians(295)), Math.toRadians(280))
+                    .splineToSplineHeading(new Pose2d(36,32, Math.toRadians(340)), Math.toRadians(90))
+                    .splineToSplineHeading(new Pose2d(46.5,34, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
@@ -235,30 +246,31 @@ public class AutoBlue extends LinearOpMode {
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(pixelArmAngle);
                     })
-                    .lineToLinearHeading(new Pose2d(-46.5,38, Math.toRadians(295)))
+                    .lineToLinearHeading(new Pose2d(-47.5,38, Math.toRadians(295)))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideCenter);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                    .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
                     .waitSeconds(0.5)
-                    .splineToSplineHeading(new Pose2d(-50.2,30, Math.toRadians(295)), Math.toRadians(280))
-                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(0)), Math.toRadians(90))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(-50.2,20, Math.toRadians(295)), Math.toRadians(280))
+                    .splineToSplineHeading(new Pose2d(36,32, Math.toRadians(340)), Math.toRadians(90))
+                    .splineToSplineHeading(new Pose2d(46.5,34, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
                     .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 12))
+                    .lineToConstantHeading(new Vector2d(46.5, 12))
                     .lineToConstantHeading(new Vector2d(60, 12))
                     .build();
 
@@ -271,28 +283,29 @@ public class AutoBlue extends LinearOpMode {
                     })
                     .lineToLinearHeading(new Pose2d(-36.2,47, Math.toRadians(310)))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideLeft);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                    .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
                     .waitSeconds(1)
-                    .splineToSplineHeading(new Pose2d(-40.2,30, Math.toRadians(295)), Math.toRadians(280))
-                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(0)), Math.toRadians(90))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(-40.2,20, Math.toRadians(295)), Math.toRadians(280))
+                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(270)), Math.toRadians(90))
+                    .splineToSplineHeading(new Pose2d(46.5,42, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
                     .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 60))
+                    .lineToConstantHeading(new Vector2d(46.5, 60))
                     .lineToConstantHeading(new Vector2d(54, 60))
                     .build();
 
@@ -305,29 +318,30 @@ public class AutoBlue extends LinearOpMode {
                     })
                     .lineToLinearHeading(new Pose2d(-36.2,47, Math.toRadians(310)))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideLeft);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
+                    .waitSeconds(0.5)
                     .addTemporalMarker(() -> {
                         Subsystems.armPosition(backBoardAngle);
                     })
                     .waitSeconds(1)
-                    .splineToSplineHeading(new Pose2d(-40.2,30, Math.toRadians(295)), Math.toRadians(280))
-                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(0)), Math.toRadians(90))
-                    .splineToSplineHeading(new Pose2d(49.5,28.9, Math.toRadians(0)), Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(-40.2,20, Math.toRadians(295)), Math.toRadians(280))
+                    .splineToSplineHeading(new Pose2d(36,28.9, Math.toRadians(270)), Math.toRadians(90))
+                    .splineToSplineHeading(new Pose2d(46.5,42, Math.toRadians(0)), Math.toRadians(0))
                     .addTemporalMarker(() -> {
-                        Subsystems.syncedSlides(slideFullEx);
+                        Subsystems.syncedSlides(slideBackBoard);
                     })
                     .waitSeconds(3)
                     .addTemporalMarker(() -> {
                         Subsystems.syncedSlides(slideStartPos);
                     })
                     .waitSeconds(.6)
-                    .lineToConstantHeading(new Vector2d(49.5, 60))
-                    .lineToConstantHeading(new Vector2d(54, 60))
+                    .lineToConstantHeading(new Vector2d(46.5, 12))
+                    .lineToConstantHeading(new Vector2d(54, 12))
                     .build();
 
 

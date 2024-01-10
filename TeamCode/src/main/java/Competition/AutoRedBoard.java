@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
@@ -27,6 +29,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutoRedBoard", group = "Competition")
 public class AutoRedBoard extends LinearOpMode {
+    private ElapsedTime runtime = new ElapsedTime();
     private static ServoImplEx leftClaw;
     private static ServoImplEx rightClaw;
     private static final int CAMERA_WIDTH  = 640; // width  of camera resolution
@@ -54,6 +57,8 @@ public class AutoRedBoard extends LinearOpMode {
         armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         armmotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -115,6 +120,7 @@ public class AutoRedBoard extends LinearOpMode {
             telemetry.addData("x", drive.getPoseEstimate().getX());
             telemetry.addData("y", drive.getPoseEstimate().getY());
             telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();
         }
 

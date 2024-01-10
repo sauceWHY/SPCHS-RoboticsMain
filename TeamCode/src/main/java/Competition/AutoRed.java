@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
@@ -28,6 +30,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutoRed", group = "Competition")
 public class AutoRed extends LinearOpMode {
+    private ElapsedTime runtime = new ElapsedTime();
     private static ServoImplEx leftClaw;
     private static ServoImplEx rightClaw;
     private static final int CAMERA_WIDTH  = 640; // width  of camera resolution
@@ -53,8 +56,11 @@ public class AutoRed extends LinearOpMode {
         //rightClaw = hardwareMap.get(ServoImplEx.class, "rightClaw"); //wrist
         armmotor = hardwareMap.get(DcMotorEx.class, "armmotor");
         armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         armmotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -116,6 +122,7 @@ public class AutoRed extends LinearOpMode {
             telemetry.addData("x", drive.getPoseEstimate().getX());
             telemetry.addData("y", drive.getPoseEstimate().getY());
             telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();
         }
 
@@ -129,13 +136,14 @@ public class AutoRed extends LinearOpMode {
         int slideStartPos = 50;
 
         
-        TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRed)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+        TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseRed)
 
 
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToConstantHeading(new Vector2d(-46.5,-55))
+                .lineToLinearHeading(new Pose2d(-36.2,-47, Math.toRadians(50)))
+                .setReversed(true)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideFullEx);
                 })
@@ -147,10 +155,9 @@ public class AutoRed extends LinearOpMode {
                     Subsystems.armPosition(backBoardAngle);
                 })
                 .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-43.2,-45, Math.toRadians(270)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(-33.2,-22, Math.toRadians(270)), Math.toRadians(100))
-                .splineToSplineHeading(new Pose2d(10,-5, Math.toRadians(0)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(49.5,-32.8, Math.toRadians(0)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-40,-5), Math.toRadians(30))
+                .splineToSplineHeading(new Pose2d(10,0, Math.toRadians(0)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(40,-44), Math.toRadians(0))
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideFullEx);
                 })
@@ -170,7 +177,8 @@ public class AutoRed extends LinearOpMode {
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToConstantHeading(new Vector2d(-46.5,-55))
+                .lineToLinearHeading(new Pose2d(-36.2,-47, Math.toRadians(50)))
+                .setReversed(true)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideFullEx);
                 })
@@ -182,10 +190,9 @@ public class AutoRed extends LinearOpMode {
                     Subsystems.armPosition(backBoardAngle);
                 })
                 .waitSeconds(0.5)
-                .splineToSplineHeading(new Pose2d(-43.2,-45, Math.toRadians(270)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(-33.2,-22, Math.toRadians(270)), Math.toRadians(100))
-                .splineToSplineHeading(new Pose2d(10,-5, Math.toRadians(0)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(49.5,-32.8, Math.toRadians(0)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-40,-5), Math.toRadians(30))
+                .splineToSplineHeading(new Pose2d(10,0, Math.toRadians(0)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(40,-44), Math.toRadians(0))
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideFullEx);
                 })

@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
@@ -27,6 +29,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name = "AutoBlueBoard", group = "Competition")
 public class AutoBlueBoard extends LinearOpMode {
+    private ElapsedTime runtime = new ElapsedTime();
     private ContourPipelineBlue myPipeline;
 
     private static ServoImplEx leftClaw;
@@ -55,6 +58,8 @@ public class AutoBlueBoard extends LinearOpMode {
         armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         armmotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -64,7 +69,9 @@ public class AutoBlueBoard extends LinearOpMode {
         telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
         telemetry.update();
         Subsystems.initialize();
+
         // OpenCV webcam
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         //OpenCV Pipeline
@@ -105,13 +112,15 @@ public class AutoBlueBoard extends LinearOpMode {
         waitForStart();
 
         if(opModeIsActive()) {
-            telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
-            telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
-            telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
-            telemetry.addData("x", drive.getPoseEstimate().getX());
-            telemetry.addData("y", drive.getPoseEstimate().getY());
-            telemetry.addData("heading", drive.getPoseEstimate().getHeading());
-            telemetry.update();
+                telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
+                telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
+                telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
+                telemetry.addData("x", drive.getPoseEstimate().getX());
+                telemetry.addData("y", drive.getPoseEstimate().getY());
+                telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.update();
+
         }
 
         Pose2d startPoseBlueBB = new Pose2d(16, 61, Math.toRadians(270));
@@ -120,23 +129,31 @@ public class AutoBlueBoard extends LinearOpMode {
 
         int pixelArmAngle = -2450;
         int backBoardAngle = -500;
-        int slideFullEx = 5700;
+        int slideCenter = 4700;
+        int slideRight = 4500;
+        int slideLeft = 3000;
         int slideStartPos = 50;
+        int slideBackBoard = 4700;
 
 
         TrajectorySequence rightTapeParkLeft = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(24, 32.8, Math.toRadians(182)))
+                .lineToLinearHeading(new Pose2d(20, 43, Math.toRadians(203)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideRight);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(backBoardAngle);
                 })
-                .lineToLinearHeading(new Pose2d(49.5, 28.9, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(48.5, 28.9, Math.toRadians(0)))
+                .addTemporalMarker(() -> {
+                    Subsystems.syncedSlides(slideBackBoard);
+                })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideStartPos);
@@ -148,21 +165,24 @@ public class AutoBlueBoard extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(14,61,Math.toRadians(270)), Math.toRadians(180))
                 .build();
 
+
         TrajectorySequence rightTapeParkRight = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(24, 32.8, Math.toRadians(182)))
+                .lineToLinearHeading(new Pose2d(20, 43, Math.toRadians(203)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideRight);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(backBoardAngle);
                 })
-                .lineToLinearHeading(new Pose2d(49.5, 28.9, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(48.5, 28.9, Math.toRadians(0)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
@@ -174,13 +194,17 @@ public class AutoBlueBoard extends LinearOpMode {
                 .setReversed(true)
                 .splineToLinearHeading(new Pose2d(14,61,Math.toRadians(270)), Math.toRadians(180))
                 .build();
+
+
         TrajectorySequence centerTapeParkLeft = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
                 .lineToLinearHeading(new Pose2d(32, 38, Math.toRadians(245)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideCenter);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
@@ -189,7 +213,7 @@ public class AutoBlueBoard extends LinearOpMode {
                 .waitSeconds(0.5)
                 .lineToLinearHeading(new Pose2d(48.5, 32.8, Math.toRadians(4)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
@@ -199,20 +223,27 @@ public class AutoBlueBoard extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(49.5, 60))
                 .lineToConstantHeading(new Vector2d(60, 60))
                 .build();
+
+
         TrajectorySequence centerTapeParkRight = drive.trajectorySequenceBuilder(startPoseBlueBB)//(0,0) is the starting position and 270 degrees is the direction it is facing if you put it on a coordinate system(straight down)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToLinearHeading(new Pose2d(33, 40, Math.toRadians(245)))
+                .lineToLinearHeading(new Pose2d(33, 40, Math.toRadians(240)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideCenter);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(backBoardAngle);
                 })
-                .lineToLinearHeading(new Pose2d(48.5, 32.8, Math.toRadians(4)))
-                .waitSeconds(2)
+                .lineToLinearHeading(new Pose2d(49.5, 32.8, Math.toRadians(4)))
+                .addTemporalMarker(() -> {
+                    Subsystems.syncedSlides(slideBackBoard);
+                })
+                .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideStartPos);
                 })
@@ -223,13 +254,17 @@ public class AutoBlueBoard extends LinearOpMode {
                 .setReversed(true)
                 .splineToLinearHeading(new Pose2d(14,61,Math.toRadians(270)), Math.toRadians(180))
                 .build();
+
+
         TrajectorySequence leftTapeLeft = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToConstantHeading(new Vector2d(24,53))
+                .lineToConstantHeading(new Vector2d(28,53))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideLeft);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
@@ -237,6 +272,9 @@ public class AutoBlueBoard extends LinearOpMode {
                 })
                 .waitSeconds(1)
                 .lineToLinearHeading(new Pose2d(49.5, 39.1, Math.toRadians(0)))
+                .addTemporalMarker(() -> {
+                    Subsystems.syncedSlides(slideBackBoard);
+                })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideStartPos);
@@ -248,12 +286,14 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
         TrajectorySequence leftTapeParkRight = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+
                 .addTemporalMarker(() -> {
                     Subsystems.armPosition(pixelArmAngle);
                 })
-                .lineToConstantHeading(new Vector2d(24,53))
+                .lineToConstantHeading(new Vector2d(28,53))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideFullEx);
+                    Subsystems.syncedSlides(slideLeft);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
@@ -261,6 +301,9 @@ public class AutoBlueBoard extends LinearOpMode {
                 })
                 .waitSeconds(1)
                 .lineToLinearHeading(new Pose2d(49.5, 39.1, Math.toRadians(0)))
+                .addTemporalMarker(() -> {
+                    Subsystems.syncedSlides(slideBackBoard);
+                })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
                     Subsystems.syncedSlides(slideStartPos);

@@ -9,36 +9,44 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
+import static org.firstinspires.ftc.teamcode.hardwareinit.leftWrist;
+import static org.firstinspires.ftc.teamcode.hardwareinit.rightWrist;
 
+
+import android.text.format.Time;
 
 import org.firstinspires.ftc.teamcode.Subsystems;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.lang.Math;
+import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "main", group = "Competition")
 public class magic extends LinearOpMode {
+    private final ElapsedTime runtime = new ElapsedTime();
 
     public static DcMotorEx rightFront;
     public static DcMotorEx leftFront;
     public static DcMotorEx leftRear;
     public static DcMotorEx rightRear;
-    public static Servo drone;
+    //public static Servo drone;
     public static double h = .7;
-    public static Servo hand;
     //public static Servo leftClaw;
     //public static Servo rightClaw;
-    //public static Servo leftWrist;
-    //public static Servo rightWrist;
     public static double k = 0.3;
     public static int c = 0;
     public static double b = 0.5;
     public static double s;
     public static PIDController controller;
-    public static double p=0.003, i=0, d=0.00015;
+    public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
 
@@ -61,17 +69,19 @@ public class magic extends LinearOpMode {
         leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         armmotor = hardwareMap.get(DcMotorEx.class, "armmotor");
         armmotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        drone = hardwareMap.get(Servo.class, "drone");
+        //drone = hardwareMap.get(Servo.class, "drone");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
+        leftSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        //leftWrist = hardwareMap.get(Servo.class, "left Wrist");
-        //rightWrist = hardwareMap.get(Servo.class, "rightWrist");
+        rightSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftWrist = hardwareMap.get(Servo.class, "leftWrist");
+        rightWrist = hardwareMap.get(Servo.class, "rightWrist");
         //leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         //rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
         imu.initialize(parameters);
         controller = new PIDController(p, i, d);
         telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
@@ -81,42 +91,37 @@ public class magic extends LinearOpMode {
         Subsystems.initialize();
 
 
-
         //////////////////////////////////////////////////////////////////
 
 
         waitForStart();
         if (opModeIsActive()) {
 
+
             while (opModeIsActive()) {
 
-
-                int startposright = 50;
-                int startposleft = -50;
-                int rightfullyex = 5700;
-                int leftfullyex = -5700;
-                int hangingarmpos = -4000;
-                int backboardangle = -300;
 
                 telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
                 telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
                 telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
-                telemetry.addData("x", drive.getPoseEstimate().getX());
-                telemetry.addData("y", drive.getPoseEstimate().getY());
-                telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.addData("posleftWrist", leftWrist.getPosition());
+                telemetry.addData("posrightWrist", rightWrist.getPosition());
                 telemetry.update();
 
                 if (gamepad1.right_bumper) {
 
-                    Subsystems.syncedSlides(5700);
+                    Subsystems.syncedSlides(5700); //fully extended
 
                 } else if (gamepad1.left_bumper) {
 
-                    Subsystems.syncedSlides(50);
+                    Subsystems.syncedSlides(50); //startpos
 
                 } else if (gamepad1.dpad_up) {
 
-                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
+                    //small adjustments to slides
+
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
                     leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
                     rightSlide.setTargetPosition(rightSlide.getCurrentPosition() + 100);
@@ -125,7 +130,9 @@ public class magic extends LinearOpMode {
 
                 } else if (gamepad1.dpad_down) {
 
-                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() + 100);
+                    //small adjustments to slides
+
+                    leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
                     leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
                     rightSlide.setTargetPosition(rightSlide.getCurrentPosition() - 100);
@@ -134,22 +141,35 @@ public class magic extends LinearOpMode {
 
                 } else if (gamepad1.y) {
 
-                    Subsystems.armPosition(-3500);
+                    Subsystems.armPosition(-3500); //hanging
 
                 } else if (gamepad1.x) {
 
-                    Subsystems.armPosition(-450);
+                    Subsystems.armPosition(-450); //backboard angle
+                    Subsystems.syncedSlides(50); //startpos
+
 
                 } else if (gamepad1.b) {
-                    Subsystems.armPosition(-2450);
-                }/*else if (gamepad1.a) {
+
+                    Subsystems.armPosition(-2450); //pixel angle
+                    Subsystems.syncedSlides(4500); //slide action
+
+
+                }else if (gamepad1.a) {
+                    Subsystems.syncedWrist(0.4);
+                } else if (gamepad1.dpad_left) {
+                    Subsystems.syncedWrist(1);
+                }
+
+
+                /*else if (gamepad2.a) {
                     if (leftClaw.getPosition() == 1) {
                         leftClaw.setPosition(0);
                         Thread.sleep(750);
                     } else if (leftClaw.getPosition() == 0) {
                         leftClaw.setPosition(1);
                     }
-                } else if (gamepad1.b){
+                } else if (gamepad2.b){
                     if (rightClaw.getPosition() == 1) {
                         rightClaw.setPosition(0);
                         Thread.sleep(750);
@@ -158,26 +178,26 @@ public class magic extends LinearOpMode {
                         Thread.sleep(750);
                     }
 */
-                }
+
 
                 //////////////////////////////////////////////////////////////
 
-                if (gamepad2.x){
-                    c = c+1;
-                    if (c == 1000){
-                        drone.setPosition(0.9);
+                if (gamepad2.x) {
+                    c = c + 1;
+                    if (c == 1000) {
+                       // drone.setPosition(0.9);
                     }
                 } else {
-                    drone.setPosition(0.65);
+                    // drone.setPosition(0.65);
                     c = 0;
                 }
 
-                if (0.4 <= (h - (-gamepad1.left_stick_y/1000)) && (h - (-gamepad1.left_stick_y/1000)) <= 1){
-                    h = h - (-gamepad1.left_stick_y/1000);
+                if (0.4 <= (h - (-gamepad1.left_stick_y / 1000)) && (h - (-gamepad1.left_stick_y / 1000)) <= 1) {
+                    h = h - (-gamepad1.left_stick_y / 1000);
                 }
 
-                if (0.30 <= (b - (k/1000)) && (b - (k/1000)) <= 0.80){
-                    b = b - (k/1000);
+                if (0.30 <= (b - (k / 1000)) && (b - (k / 1000)) <= 0.80) {
+                    b = b - (k / 1000);
                 }
                 //hand.setPosition(k);
                 //arm.setPosition(h);
@@ -197,15 +217,15 @@ public class magic extends LinearOpMode {
                 double frontRightPower = ((y - x - rx)) / denominator;
                 double backRightPower = ((y + x - rx)) / denominator;
                 */
-                double theta = Math.atan2(y,x);
-                double power = Math.hypot(x,y);
-                double sin = Math.sin(theta - Math.PI/4);
-                double cos = Math.cos(theta - Math.PI/4);
+                double theta = Math.atan2(y, x);
+                double power = Math.hypot(x, y);
+                double sin = Math.sin(theta - Math.PI / 4);
+                double cos = Math.cos(theta - Math.PI / 4);
                 double max = Math.max(Math.abs(sin), Math.abs(cos));
-                double frontLeftPower = power * cos/max + rx;
-                double frontRightPower = power * sin/max - rx;
-                double backLeftPower = power * sin/max + rx;
-                double backRightPower = power * cos/max - rx;
+                double frontLeftPower = power * cos / max + rx;
+                double frontRightPower = power * sin / max - rx;
+                double backLeftPower = power * sin / max + rx;
+                double backRightPower = power * cos / max - rx;
 
                 if ((power + Math.abs(rx)) > 1) {
                     frontLeftPower /= power + rx;
@@ -215,12 +235,12 @@ public class magic extends LinearOpMode {
                 }
 
 
-                for(double i = .5; i <= 1; i += 0.08) {
+                for (double i = .5; i <= 1; i += 0.08) {
 
-                    double h = i*100;
-                    i = h/100;
+                    double h = i * 100;
+                    i = h / 100;
 
-                    Thread.sleep(1/100000000);
+                    Thread.sleep(1 / 100000000);
 
                     leftFront.setPower(frontLeftPower * i);
                     leftRear.setPower(backLeftPower * i);
@@ -229,10 +249,8 @@ public class magic extends LinearOpMode {
                 }
 
 
-
-
             }
         }
     }
-
+}
 
