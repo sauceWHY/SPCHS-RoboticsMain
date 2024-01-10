@@ -10,7 +10,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
@@ -23,8 +25,6 @@ import android.text.format.Time;
 
 import org.firstinspires.ftc.teamcode.Subsystems;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.lang.Math;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +49,14 @@ public class magic extends LinearOpMode {
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
+    TouchSensor touch;
+    double maxVelocity = 50; // Set your maximum desired velocity
+    double maxAcceleration = 50; // Set your maximum desired acceleration
+    double joystickThreshold = 0.1; // Set a threshold for joystick dead zone
+    private static final long LOOP_PERIOD_MS = 10;
 
+    double currentVelocityX = 0.0;
+    double currentVelocityY = 0.0;
 
     /**
      * This function is executed when this OpMode is selected from the Driver Station.
@@ -57,6 +64,7 @@ public class magic extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        touch = hardwareMap.get(TouchSensor.class, "touch");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
@@ -111,7 +119,7 @@ public class magic extends LinearOpMode {
 
                 if (gamepad1.right_bumper) {
 
-                    Subsystems.syncedSlides(5700); //fully extended
+                    Subsystems.syncedSlides(5000); //fully extended
 
                 } else if (gamepad1.left_bumper) {
 
@@ -139,9 +147,26 @@ public class magic extends LinearOpMode {
                     rightSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     rightSlide.setPower(1);
 
+                } else if (gamepad1.dpad_left) {
+
+                    armmotor.setTargetPosition(leftSlide.getCurrentPosition() + 100);
+                    armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                    armmotor.setPower(1);
+
+                } else if (gamepad1.dpad_right) {
+
+                    armmotor.setTargetPosition(leftSlide.getCurrentPosition() - 100);
+                    armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                    armmotor.setPower(1);
+
                 } else if (gamepad1.y) {
 
-                    Subsystems.armPosition(-3500); //hanging
+                    if (rightSlide.getCurrentPosition() <= 100 ) {
+
+                        Subsystems.armPosition(-3500); //hanging
+                        Subsystems.syncedWrist(1);
+
+                    }
 
                 } else if (gamepad1.x) {
 
@@ -155,29 +180,32 @@ public class magic extends LinearOpMode {
                     Subsystems.syncedSlides(4500); //slide action
 
 
-                }else if (gamepad1.a) {
+                }else if (gamepad2.a) {
+
                     Subsystems.syncedWrist(0.4);
-                } else if (gamepad1.dpad_left) {
+
+                } else if (gamepad2.dpad_left) {
+
                     Subsystems.syncedWrist(1);
+
                 }
 
+                if (touch.isPressed()) {
 
-                /*else if (gamepad2.a) {
-                    if (leftClaw.getPosition() == 1) {
-                        leftClaw.setPosition(0);
-                        Thread.sleep(750);
-                    } else if (leftClaw.getPosition() == 0) {
-                        leftClaw.setPosition(1);
-                    }
-                } else if (gamepad2.b){
-                    if (rightClaw.getPosition() == 1) {
-                        rightClaw.setPosition(0);
-                        Thread.sleep(750);
-                    } else if (rightClaw.getPosition() == 0) {
-                        rightClaw.setPosition(1);
-                        Thread.sleep(750);
-                    }
-*/
+                    telemetry.addData("Touch Sensor", "Is Pressed");
+                    telemetry.update();
+                    rightSlide.setPower(0);
+                    leftSlide.setPower(0);
+                    rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                } else {
+
+                    telemetry.addData("Touch Sensor", "Is Not Pressed");
+                    telemetry.update();
+
+                }
+
 
 
                 //////////////////////////////////////////////////////////////
@@ -217,6 +245,8 @@ public class magic extends LinearOpMode {
                 double frontRightPower = ((y - x - rx)) / denominator;
                 double backRightPower = ((y + x - rx)) / denominator;
                 */
+
+                /*
                 double theta = Math.atan2(y, x);
                 double power = Math.hypot(x, y);
                 double sin = Math.sin(theta - Math.PI / 4);
@@ -234,7 +264,58 @@ public class magic extends LinearOpMode {
                     backRightPower /= power + rx;
                 }
 
+                 */
 
+                while ((Math.abs(gamepad1.left_stick_x) > joystickThreshold || Math.abs(gamepad1.left_stick_y) > joystickThreshold)) {
+                    double targetVelocityX = gamepad1.left_stick_x * maxVelocity;
+                    double targetVelocityY = gamepad1.left_stick_y * maxVelocity;
+
+                    // Calculate acceleration (considering both acceleration and deceleration)
+                    double accelerationX = (targetVelocityX - currentVelocityX) / Math.min(1.0, getRuntime());
+                    double accelerationY = (targetVelocityY - currentVelocityY) / Math.min(1.0, getRuntime());
+
+                    // Cap the accelerations to the maximum value
+                    accelerationX = Range.clip(accelerationX, -maxAcceleration, maxAcceleration);
+                    accelerationY = Range.clip(accelerationY, -maxAcceleration, maxAcceleration);
+
+                    // Integrate accelerations to get velocities
+                    currentVelocityX += accelerationX * (LOOP_PERIOD_MS / 1000.0);
+                    currentVelocityY += accelerationY * (LOOP_PERIOD_MS / 1000.0);
+
+                    // Cap the velocities to the maximum value
+                    currentVelocityX = Range.clip(currentVelocityX, -maxVelocity, maxVelocity);
+                    currentVelocityY = Range.clip(currentVelocityY, -maxVelocity, maxVelocity);
+
+                    // Translate velocities to motor outputs (using your mecanum drivetrain code)
+
+                    double frontLeftPower = currentVelocityY - currentVelocityX + rx;
+                    double frontRightPower = currentVelocityY + currentVelocityX  - rx;
+                    double backLeftPower = currentVelocityY + currentVelocityX + rx;
+                    double backRightPower = currentVelocityY - currentVelocityX - rx;
+
+
+                    double maxPower = Math.max(
+                            Math.abs(frontLeftPower),
+                            Math.abs(frontRightPower)
+                    );
+
+                    if (maxPower > 1.0) {
+                        frontLeftPower /= maxPower;
+                        frontRightPower /= maxPower;
+                        backLeftPower /= maxPower;
+                        backRightPower /= maxPower;
+                    }
+
+                    leftFront.setPower(frontLeftPower);
+                    leftRear.setPower(backLeftPower);
+                    rightFront.setPower(frontRightPower);
+                    rightRear.setPower(backRightPower);
+
+
+                }
+
+
+/*
                 for (double i = .5; i <= 1; i += 0.08) {
 
                     double h = i * 100;
@@ -247,7 +328,7 @@ public class magic extends LinearOpMode {
                     rightFront.setPower(frontRightPower * i);
                     rightRear.setPower(backRightPower * i);
                 }
-
+*/
 
             }
         }
