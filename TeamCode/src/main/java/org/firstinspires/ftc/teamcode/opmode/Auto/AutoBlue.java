@@ -1,4 +1,4 @@
-package Competition;
+package org.firstinspires.ftc.teamcode.opmode.Auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -20,14 +20,14 @@ import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Subsystems;
 import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Autonomous(name = "AutoBlue", group = "Competition")
+@Autonomous(name = "AutoBlue", group = "org/firstinspires/ftc/teamcode/drive/opmode/Competition")
 public class AutoBlue extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private static ServoImplEx leftClaw;

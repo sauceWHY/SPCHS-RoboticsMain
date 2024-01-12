@@ -1,4 +1,4 @@
-package Competition;
+package org.firstinspires.ftc.teamcode.opmode.TeleOp;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -21,15 +20,12 @@ import static org.firstinspires.ftc.teamcode.hardwareinit.leftWrist;
 import static org.firstinspires.ftc.teamcode.hardwareinit.rightWrist;
 
 
-import android.text.format.Time;
-
 import org.firstinspires.ftc.teamcode.Subsystems;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.SampleMecanumDrive;
 
 import java.lang.Math;
-import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "main", group = "Competition")
+@TeleOp(name = "main", group = "org/firstinspires/ftc/teamcode/drive/opmode/Competition")
 public class magic extends LinearOpMode {
     private final ElapsedTime runtime = new ElapsedTime();
 
