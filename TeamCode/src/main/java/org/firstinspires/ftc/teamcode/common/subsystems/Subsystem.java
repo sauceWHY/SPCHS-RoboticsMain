@@ -1,21 +1,19 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common.subsystems;
 
+
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWrist;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftWrist;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightWrist;
-
-public class Subsystems extends SubsystemBase {
+public class Subsystem extends SubsystemBase {
     public static PIDController controller;
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;

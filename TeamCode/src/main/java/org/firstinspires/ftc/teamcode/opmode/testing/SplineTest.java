@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 
 /*
  * This is an example of a more complex path to really test the tuning.

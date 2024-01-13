@@ -13,15 +13,15 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftWrist;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightWrist;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWrist;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
 
 
-import org.firstinspires.ftc.teamcode.Subsystems;
-import org.firstinspires.ftc.teamcode.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.subsystems.Subsystem;
+import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 
 import java.lang.Math;
 
@@ -92,7 +92,7 @@ public class magic extends LinearOpMode {
         telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
         telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
         telemetry.update();
-        Subsystems.initialize();
+        Subsystem.initialize();
 
 
         //////////////////////////////////////////////////////////////////
@@ -115,11 +115,11 @@ public class magic extends LinearOpMode {
 
                 if (gamepad1.right_bumper) {
 
-                    Subsystems.syncedSlides(5000); //fully extended
+                    Subsystem.syncedSlides(5000); //fully extended
 
                 } else if (gamepad1.left_bumper) {
 
-                    Subsystems.syncedSlides(50); //startpos
+                    Subsystem.syncedSlides(50); //startpos
 
                 } else if (gamepad1.dpad_up) {
 
@@ -159,30 +159,30 @@ public class magic extends LinearOpMode {
 
                     if (rightSlide.getCurrentPosition() <= 100 ) {
 
-                        Subsystems.armPosition(-3500); //hanging
-                        Subsystems.syncedWrist(1);
+                        Subsystem.armPosition(-3500); //hanging
+                        Subsystem.syncedWrist(1);
 
                     }
 
                 } else if (gamepad1.x) {
 
-                    Subsystems.armPosition(-450); //backboard angle
-                    Subsystems.syncedSlides(50); //startpos
+                    Subsystem.armPosition(-450); //backboard angle
+                    Subsystem.syncedSlides(50); //startpos
 
 
                 } else if (gamepad1.b) {
 
-                    Subsystems.armPosition(-2450); //pixel angle
-                    Subsystems.syncedSlides(4500); //slide action
+                    Subsystem.armPosition(-2450); //pixel angle
+                    Subsystem.syncedSlides(4500); //slide action
 
 
                 }else if (gamepad2.a) {
 
-                    Subsystems.syncedWrist(0.4);
+                    Subsystem.syncedWrist(0.4);
 
                 } else if (gamepad2.dpad_left) {
 
-                    Subsystems.syncedWrist(1);
+                    Subsystem.syncedWrist(1);
 
                 }
 

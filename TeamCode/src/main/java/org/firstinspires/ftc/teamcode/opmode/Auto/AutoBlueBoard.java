@@ -12,15 +12,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightSlide;
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Subsystems;
+import org.firstinspires.ftc.teamcode.common.subsystems.Subsystem;
 import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue;
-import org.firstinspires.ftc.teamcode.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -68,7 +68,7 @@ public class AutoBlueBoard extends LinearOpMode {
         telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
         telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
         telemetry.update();
-        Subsystems.initialize();
+        Subsystem.initialize();
 
         // OpenCV webcam
 
@@ -140,23 +140,23 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToLinearHeading(new Pose2d(20, 43, Math.toRadians(203)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideRight);
+                    Subsystem.syncedSlides(slideRight);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .lineToLinearHeading(new Pose2d(48.5, 28.9, Math.toRadians(0)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(.6)
                 .lineToConstantHeading(new Vector2d(49.5, 60))
@@ -170,23 +170,23 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToLinearHeading(new Pose2d(20, 43, Math.toRadians(203)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideRight);
+                    Subsystem.syncedSlides(slideRight);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .lineToLinearHeading(new Pose2d(48.5, 28.9, Math.toRadians(0)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(.6)
                 .lineToConstantHeading(new Vector2d(49.5, 12))
@@ -200,24 +200,24 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToLinearHeading(new Pose2d(32, 38, Math.toRadians(245)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideCenter);
+                    Subsystem.syncedSlides(slideCenter);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .waitSeconds(0.5)
                 .lineToLinearHeading(new Pose2d(48.5, 32.8, Math.toRadians(4)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(1)
                 .lineToConstantHeading(new Vector2d(49.5, 60))
@@ -229,23 +229,23 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToLinearHeading(new Pose2d(33, 40, Math.toRadians(240)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideCenter);
+                    Subsystem.syncedSlides(slideCenter);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .lineToLinearHeading(new Pose2d(49.5, 32.8, Math.toRadians(4)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(0.6)
                 .lineToConstantHeading(new Vector2d(49.5, 12))
@@ -260,24 +260,24 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToConstantHeading(new Vector2d(28,53))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideLeft);
+                    Subsystem.syncedSlides(slideLeft);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .waitSeconds(1)
                 .lineToLinearHeading(new Pose2d(49.5, 39.1, Math.toRadians(0)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(.3)
                 .lineToConstantHeading(new Vector2d(49.5, 60))
@@ -289,24 +289,24 @@ public class AutoBlueBoard extends LinearOpMode {
 
 
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(pixelArmAngle);
+                    Subsystem.armPosition(pixelArmAngle);
                 })
                 .lineToConstantHeading(new Vector2d(28,53))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideLeft);
+                    Subsystem.syncedSlides(slideLeft);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.armPosition(backBoardAngle);
+                    Subsystem.armPosition(backBoardAngle);
                 })
                 .waitSeconds(1)
                 .lineToLinearHeading(new Pose2d(49.5, 39.1, Math.toRadians(0)))
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideBackBoard);
+                    Subsystem.syncedSlides(slideBackBoard);
                 })
                 .waitSeconds(3)
                 .addTemporalMarker(() -> {
-                    Subsystems.syncedSlides(slideStartPos);
+                    Subsystem.syncedSlides(slideStartPos);
                 })
                 .waitSeconds(.7)
                 .lineToConstantHeading(new Vector2d(49.5, 12))
