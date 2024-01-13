@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
@@ -35,7 +34,7 @@ public class Subsystems extends SubsystemBase {
         controller.setPID(p, i, d);
         int armPos = armmotor.getCurrentPosition();
         double pid = controller.calculate(armPos, armTarget);
-        double ff = Math.cos(Math.toRadians(armTarget / ticks_per_rev)) * f;
+        double ff = Math.cos(Math.toRadians(armPos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
@@ -43,41 +42,29 @@ public class Subsystems extends SubsystemBase {
     }
 
     public static void slideLeftPosition(int slideLeftTarget) {
-        leftSlide.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        int slidePos = leftSlide.getCurrentPosition();
-        int error = slideLeftTarget - slidePos;
+        leftSlide.setTargetPosition(slideLeftTarget);
+        leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
+        int slidePos = leftSlide.getCurrentPosition();
         double pid = controller.calculate(slidePos, slideLeftTarget);
         double ff = Math.cos(Math.toRadians(slidePos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        power = Range.clip(power, -1.0, 1.0);
-
         leftSlide.setPower(power);
-
-        if (Math.abs(error) < 10) {
-            leftSlide.setPower(0.0);
-        }
     }
 
     public static void slideRightPosition(int slideRightTarget) {
-        rightSlide.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        int slidePos = rightSlide.getCurrentPosition();
-        int error = slideRightTarget - slidePos;
+        rightSlide.setTargetPosition(slideRightTarget);
+        rightSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
+        int slidePos = rightSlide.getCurrentPosition();
         double pid = controller.calculate(slidePos, slideRightTarget);
         double ff = Math.cos(Math.toRadians(slidePos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        power = Range.clip(power, -1.0, 1.0);
-
         rightSlide.setPower(power);
-
-        if (Math.abs(error) < 10) {
-            rightSlide.setPower(0.0);
-        }
     }
 
     public static void syncedSlides(int slideTarget) {

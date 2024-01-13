@@ -42,17 +42,19 @@ public class PIDArm extends OpMode {
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
     }
         public void loop() {
+            armmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            armmotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             controller.setPID(p, i, d);
             int armPos = armmotor.getCurrentPosition();
             double pidArm = controller.calculate(armPos, armTarget);
-            double ffArm = Math.cos(Math.toRadians(armTarget / ticks_per_rev)) * f;
+            double ffArm = Math.cos(Math.toRadians(armPos / ticks_per_rev)) * f;
 
             double powerArm = pidArm + ffArm;
 
             armmotor.setPower(powerArm);
 
-            telemetry.addData("pos", armPos);
-            telemetry.addData("target", armTarget);
+            telemetry.addData("armpos", armPos);
+            telemetry.addData("armtarget", armTarget);
             telemetry.update();
 
             controller.setPID(p, i, d);
@@ -64,8 +66,8 @@ public class PIDArm extends OpMode {
 
             armmotor.setPower(powerLeftSlide);
 
-            telemetry.addData("pos", leftSlidePos);
-            telemetry.addData("target", leftSlideTarget);
+            telemetry.addData("leftpos", leftSlidePos);
+            telemetry.addData("lefttarget", leftSlideTarget);
             telemetry.update();
 
             controller.setPID(p, i, d);
@@ -77,8 +79,8 @@ public class PIDArm extends OpMode {
 
             armmotor.setPower(powerRightSlide);
 
-            telemetry.addData("pos", rightSlidePos);
-            telemetry.addData("target", rightSlideTarget);
+            telemetry.addData("rightpos", rightSlidePos);
+            telemetry.addData("righttarget", rightSlideTarget);
             telemetry.update();
 
     }

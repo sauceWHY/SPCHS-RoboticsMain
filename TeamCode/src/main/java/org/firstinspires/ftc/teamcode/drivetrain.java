@@ -1,30 +1,39 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 @TeleOp
+@Disabled
 public class drivetrain extends LinearOpMode {
     public static DcMotorEx rightFront;
     public static DcMotorEx leftFront;
     public static DcMotorEx leftRear;
     public static DcMotorEx rightRear;
-    final Timer timer = new Timer();
+    // TouchSensor touch;
+
 
     public void runOpMode() throws InterruptedException {
+        CommandScheduler.getInstance().reset();
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        // touch = hardwareMap.get(TouchSensor.class, "touch");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
@@ -43,37 +52,17 @@ public class drivetrain extends LinearOpMode {
 
         waitForStart();
         if (opModeIsActive()) {
-            TimerTask arm = new TimerTask() {
-                @Override
-                public void run() {
-                    drive.turn(Math.toRadians(90));
-                }
-            };
-            TimerTask slides = new TimerTask() {
-                @Override
-                public void run() {
-                    drive.turn(Math.toRadians(180));
-                }
-            };
-            TimerTask claw = new TimerTask() {
-                @Override
-                public void run() {
-                    drive.turn(Math.toRadians(270));
-                }
-            };
-
 
             while (opModeIsActive()) {
-
+/*
                 telemetry.addData("heading", drive.getExternalHeading());
-                telemetry.update();
+                if (touch.isPressed()) {
+                    telemetry.addData("Touch Sensor", "Is Pressed");
+                } else {
+                    telemetry.addData("Touch Sensor", "Is Not Pressed");
 
-                if (gamepad2.a) {
-                    drive.turn(Math.toRadians(90));
-                    Thread.sleep(1000);
-                    drive.turn(Math.toRadians(90));
-
-                }
+                    telemetry.update();
+*/
 
 
                 double y = -gamepad2.left_stick_y; // Remember, Y stick value is reversed
