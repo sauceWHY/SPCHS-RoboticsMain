@@ -31,7 +31,10 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 /*
@@ -59,11 +62,19 @@ public class RobotHardware {
     private LinearOpMode myOpMode = null;   // gain access to methods in the calling OpMode.
 
     // Define Motor and Servo objects  (Make them private so they can't be accessed externally)
-    private DcMotor leftDrive   = null;
-    private DcMotor rightDrive  = null;
-    private DcMotor armMotor = null;
-    private Servo   leftHand = null;
-    private Servo   rightHand = null;
+    private DcMotor leftFrontDrive   = null;
+    private DcMotor rightFrontDrive  = null;
+    private DcMotor leftRearDrive = null;
+    private DcMotor rightRearDrive = null;
+    private DcMotor armAngleMotor = null;
+    private DcMotor leftSlide = null;
+    private DcMotor rightSlide = null;
+    private Servo leftClaw = null;
+    private Servo rightClaw = null;
+    private Servo rightWrist = null;
+    private Servo leftWrist = null;
+    private TouchSensor touchSensor = null;
+
 
     // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
     public static final double MID_SERVO       =  0.5 ;
@@ -84,25 +95,42 @@ public class RobotHardware {
      */
     public void init()    {
         // Define and Initialize Motors (note: need to use reference to actual OpMode).
-        leftDrive  = myOpMode.hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_drive");
-        armMotor   = myOpMode.hardwareMap.get(DcMotor.class, "arm");
+        leftFrontDrive  = myOpMode.hardwareMap.get(DcMotor.class, "left_drive");
+        rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_drive");
+        rightFrontDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFrontDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftRearDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "leftRear");
+        rightRearDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "rightRear");
+        armAngleMotor   = myOpMode.hardwareMap.get(DcMotor.class, "arm");
+        leftSlide = myOpMode.hardwareMap.get(DcMotor.class, "leftSlide");
+        rightSlide = myOpMode.hardwareMap.get(DcMotor.class, "rightSlide");
+
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightRearDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftRearDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        rightFrontDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        leftFrontDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rightRearDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        leftRearDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
 
         // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        // leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-        leftHand = myOpMode.hardwareMap.get(Servo.class, "left_hand");
-        rightHand = myOpMode.hardwareMap.get(Servo.class, "right_hand");
-        leftHand.setPosition(MID_SERVO);
-        rightHand.setPosition(MID_SERVO);
+        leftClaw = myOpMode.hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = myOpMode.hardwareMap.get(Servo.class, "rightClaw");
+        rightWrist = myOpMode.hardwareMap.get(Servo.class, "rightWrist");
+        leftWrist = myOpMode.hardwareMap.get(Servo.class, "leftWrist");
 
         myOpMode.telemetry.addData(">", "Hardware Initialized");
         myOpMode.telemetry.update();
