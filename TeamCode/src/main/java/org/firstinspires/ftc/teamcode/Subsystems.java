@@ -3,16 +3,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.hardwareinit.armmotor;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.leftWrist;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightSlide;
-import static org.firstinspires.ftc.teamcode.hardwareinit.rightWrist;
+import static org.firstinspires.ftc.teamcode.hardware.*;
 
 public class Subsystems extends SubsystemBase {
     public static PIDController controller;
@@ -23,12 +17,13 @@ public class Subsystems extends SubsystemBase {
     public static long[] lastPressTimes = new long[3]; // Array to store timestamps for each action
     public static long[] delayDurations = {2000, 3000, 4000}; // Different delay durations for each action
 
-    public static void initialize() {
+    public static void init() {
         controller = new PIDController(p, i, d);
 
     }
 
     public static void armPosition(int armTarget) {
+
         armmotor.setTargetPosition(armTarget);
         armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
@@ -39,6 +34,7 @@ public class Subsystems extends SubsystemBase {
         double power = pid + ff;
 
         armmotor.setPower(power);
+
     }
 
     public static void slideLeftPosition(int slideLeftTarget) {
