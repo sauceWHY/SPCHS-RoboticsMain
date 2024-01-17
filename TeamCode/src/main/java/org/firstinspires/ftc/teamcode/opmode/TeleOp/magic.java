@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.TeleOp;
 
+import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -12,6 +13,15 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.ConditionalCommand;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
@@ -20,23 +30,21 @@ import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWr
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
 
 
+import org.firstinspires.ftc.teamcode.common.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.common.subsystems.Subsystem;
 import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 
 import java.lang.Math;
 
 @TeleOp(name = "main", group = "org/firstinspires/ftc/teamcode/drive/opmode/Competition")
-public class magic extends LinearOpMode {
-    private final ElapsedTime runtime = new ElapsedTime();
-
+public class magic extends CommandOpMode {
+    //final RobotHardware hardware = RobotHardware.get;
     public static DcMotorEx rightFront;
     public static DcMotorEx leftFront;
     public static DcMotorEx leftRear;
     public static DcMotorEx rightRear;
     //public static Servo drone;
     public static double h = .7;
-    //public static Servo leftClaw;
-    //public static Servo rightClaw;
     public static double k = 0.3;
     public static int c = 0;
     public static double b = 0.5;
@@ -328,6 +336,11 @@ public class magic extends LinearOpMode {
 
             }
         }
+    }
+
+    @Override
+    public void initialize() {
+
     }
 }
 
