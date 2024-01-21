@@ -7,14 +7,18 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import static org.firstinspires.ftc.teamcode.RobotHardware.*;
 
 
-import android.annotation.SuppressLint;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
+import org.firstinspires.ftc.teamcode.Vision.ContourPipelineRed;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
@@ -24,13 +28,14 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import org.firstinspires.ftc.teamcode.Subsystems;
 
-@Autonomous(name = "AutoBlueBoard", group = "Competition")
-private class AutoBlueBoard extends LinearOpMode {
-
+@Autonomous(name = "FarAutoRed", group = "Competition")
+private class FarAutoRed extends LinearOpMode {
+    
     private enum State {
         INITIAL,
         BACKBOARD,
         PARK,
+        DRIVE_THROUGH_CENTER,
         TAPE_CAMERA,
         RIGHT_TAPE,
         LEFT_TAPE,
@@ -42,15 +47,15 @@ private class AutoBlueBoard extends LinearOpMode {
         SLIDE_RETRACT,
 
     }
-    private enum Board {
+    public enum Board {
         LEFT,
         MIDDLE,
         RIGHT
     }
 
 
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 180.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 96, 255);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 188.0, 60.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 100.0);
 
     public final ElapsedTime runtime = new ElapsedTime();
     private final ElapsedTime StateTime = new ElapsedTime();
@@ -77,7 +82,8 @@ private class AutoBlueBoard extends LinearOpMode {
     private static final int SLIDE_START_POS = 50;
     private State CurrentState;
 
-    @SuppressLint("DefaultLocale")
+
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -88,12 +94,11 @@ private class AutoBlueBoard extends LinearOpMode {
         Subsystems.init();
 
         // OpenCV webcam
-
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         //OpenCV Pipeline
-        ContourPipelineBlue myPipeline = new ContourPipelineBlue(borderLeftX, borderRightX, borderTopY, borderBottomY);
-        webcam.setPipeline(myPipeline);
+        ContourPipelineRed myPipeline;
+        webcam.setPipeline(myPipeline = new ContourPipelineRed(borderLeftX, borderRightX, borderTopY, borderBottomY));
         // Configuration of Pipeline
         myPipeline.configureScalarLower(scalarLowerYCrCb.val[0], scalarLowerYCrCb.val[1], scalarLowerYCrCb.val[2]);
         myPipeline.configureScalarUpper(scalarUpperYCrCb.val[0], scalarUpperYCrCb.val[1], scalarUpperYCrCb.val[2]);
@@ -101,9 +106,7 @@ private class AutoBlueBoard extends LinearOpMode {
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-
                 webcam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN);
-
             }
 
 
@@ -118,9 +121,9 @@ private class AutoBlueBoard extends LinearOpMode {
 
         FtcDashboard dashboard = FtcDashboard.getInstance(); //this all the way to telemetry.update(); is available at 192.168.43.1:8080/dash
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        FtcDashboard.getInstance().startCameraStream(webcam, 30);
         telemetry.update();
-
+        
+        
         if (gamepad1.a) {
             delayStart = !delayStart;
         }
@@ -141,10 +144,9 @@ private class AutoBlueBoard extends LinearOpMode {
         telemetry.addData("Selected Delay Time", "%.1f seconds", selectedDelayTime);
         telemetry.addData("Press B to toggle park side", "Current: " + (leftPark ? "Left" : "Right"));
         telemetry.update();
-
+        
 
         waitForStart();
-
         if (opModeIsActive()) {
 
             runtime.reset();
@@ -163,70 +165,75 @@ private class AutoBlueBoard extends LinearOpMode {
                 telemetry.update();
 
 
-                Pose2d startPoseBlueBB = new Pose2d(16, 61, Math.toRadians(270));
+                Pose2d startPoseRed = new Pose2d(-36.2, -61, Math.toRadians(90));
 
-                drive.setPoseEstimate(startPoseBlueBB);
+                drive.setPoseEstimate(startPoseRed);
 
 
-                TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+                TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                        .lineToConstantHeading(new Vector2d(26.3, 55))
+                        .lineToConstantHeading(new Vector2d(-46.5, -55))
+                        .build();
+                TrajectorySequence leftTape2 = drive.trajectorySequenceBuilder(startPoseRed)
+
+                        .lineToLinearHeading(new Pose2d(-35,-35, Math.toRadians(180)))
                         .build();
 
-                TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+                TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                        .lineToLinearHeading(new Pose2d(27, 57, Math.toRadians(255)))
+                        .lineToLinearHeading(new Pose2d(-47.2, -57, Math.toRadians(75)))
                         .build();
 
-                TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+                TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                        .lineToLinearHeading(new Pose2d(34, 43, Math.toRadians(203)))
+                        .lineToLinearHeading(new Pose2d(-54.2, -43, Math.toRadians(23)))
                         .build();
 
                 TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
 
-                        .lineToLinearHeading(new Pose2d(45.5, 25.9, Math.toRadians(0)))
+                        .lineToLinearHeading(new Pose2d(45.5, -25.9, Math.toRadians(0)))
                         .build();
 
                 TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
 
-                        .lineToLinearHeading(new Pose2d(45.5, 31.8, Math.toRadians(0)))
+                        .lineToLinearHeading(new Pose2d(45.5, -31.8, Math.toRadians(0)))
                         .build();
 
                 TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
 
-                        .lineToLinearHeading(new Pose2d(45.5, 39.1, Math.toRadians(0)))
+                        .lineToLinearHeading(new Pose2d(45.5, -39.1, Math.toRadians(0)))
                         .build();
 
                 TrajectorySequence BBLparkRight = drive.trajectorySequenceBuilder(backBoardLeft.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 5))
+                        .lineToConstantHeading(new Vector2d(45.5, -60))
                         .build();
 
                 TrajectorySequence BBMparkRight = drive.trajectorySequenceBuilder(backBoardMiddle.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 5))
+                        .lineToConstantHeading(new Vector2d(45.5, -60))
                         .build();
 
                 TrajectorySequence BBRparkRight = drive.trajectorySequenceBuilder(backBoardRight.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 5))
+                        .lineToConstantHeading(new Vector2d(45.5, -60))
                         .build();
 
                 TrajectorySequence BBLparkLeft = drive.trajectorySequenceBuilder(backBoardLeft.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 60))
+                        .lineToConstantHeading(new Vector2d(45.5, -5))
                         .build();
 
                 TrajectorySequence BBMparkLeft = drive.trajectorySequenceBuilder(backBoardMiddle.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 60))
+                        .lineToConstantHeading(new Vector2d(45.5, -5))
                         .build();
 
                 TrajectorySequence BBRparkLeft = drive.trajectorySequenceBuilder(backBoardRight.end())
 
-                        .lineToConstantHeading(new Vector2d(45.5, 60))
+                        .lineToConstantHeading(new Vector2d(45.5, -5))
                         .build();
+                TrajectorySequence Drive
 
 
 
@@ -277,18 +284,18 @@ private class AutoBlueBoard extends LinearOpMode {
 
                     case LEFT_TAPE:
 
-                            drive.followTrajectorySequenceAsync(leftTape);
-                            Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        drive.followTrajectorySequenceAsync(leftTape);
+                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
 
-                            if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
 
-                                StateTime.reset();
-                                state= State.SLIDE_EXTENSION;
-                                board = Board.LEFT;
+                            StateTime.reset();
+                            state= State.SLIDE_EXTENSION;
+                            board = Board.LEFT;
 
-                            }
+                        }
 
-                            break;
+                        break;
 
                     case MIDDLE_TAPE:
 
@@ -345,6 +352,15 @@ private class AutoBlueBoard extends LinearOpMode {
                         }
 
                         break;
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
 
                     case BACKBOARD:
 
@@ -436,6 +452,4 @@ private class AutoBlueBoard extends LinearOpMode {
             }
         }
     }
-
 }
-
