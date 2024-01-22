@@ -72,7 +72,7 @@ public class ConceptExternalHardwareClass extends LinearOpMode {
 
     // Create a RobotHardware object to be used to access robot hardware.
     // Prefix any hardware functions with "robot." to access this class.
-    org.firstinspires.ftc.robotcontroller.external.samples.RobotHardware robot       = new RobotHardware(this);
+    org.firstinspires.ftc.robotcontroller.external.samples.RobotHardware robot = new RobotHardware(this);
 
     @Override
     public void runOpMode() {

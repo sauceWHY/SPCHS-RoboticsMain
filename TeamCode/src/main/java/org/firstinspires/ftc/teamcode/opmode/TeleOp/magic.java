@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmode.TeleOp;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -11,17 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.acmerobotics.dashboard.config.Config;
-import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.ConditionalCommand;
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
@@ -30,8 +19,7 @@ import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWr
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
 
 
-import org.firstinspires.ftc.teamcode.common.hardware.RobotHardware;
-import org.firstinspires.ftc.teamcode.common.subsystems.Subsystem;
+import org.firstinspires.ftc.teamcode.common.subsystems.RightClawSubsystem;
 import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 
 import java.lang.Math;
@@ -100,7 +88,7 @@ public class magic extends CommandOpMode {
         telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
         telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
         telemetry.update();
-        Subsystem.initialize();
+        RightClawSubsystem.initialize();
 
 
         //////////////////////////////////////////////////////////////////
@@ -123,11 +111,11 @@ public class magic extends CommandOpMode {
 
                 if (gamepad1.right_bumper) {
 
-                    Subsystem.syncedSlides(5000); //fully extended
+                    RightClawSubsystem.syncedSlides(5000); //fully extended
 
                 } else if (gamepad1.left_bumper) {
 
-                    Subsystem.syncedSlides(50); //startpos
+                    RightClawSubsystem.syncedSlides(50); //startpos
 
                 } else if (gamepad1.dpad_up) {
 
@@ -167,30 +155,30 @@ public class magic extends CommandOpMode {
 
                     if (rightSlide.getCurrentPosition() <= 100 ) {
 
-                        Subsystem.armPosition(-3500); //hanging
-                        Subsystem.syncedWrist(1);
+                        RightClawSubsystem.armPosition(-3500); //hanging
+                        RightClawSubsystem.syncedWrist(1);
 
                     }
 
                 } else if (gamepad1.x) {
 
-                    Subsystem.armPosition(-450); //backboard angle
-                    Subsystem.syncedSlides(50); //startpos
+                    RightClawSubsystem.armPosition(-450); //backboard angle
+                    RightClawSubsystem.syncedSlides(50); //startpos
 
 
                 } else if (gamepad1.b) {
 
-                    Subsystem.armPosition(-2450); //pixel angle
-                    Subsystem.syncedSlides(4500); //slide action
+                    RightClawSubsystem.armPosition(-2450); //pixel angle
+                    RightClawSubsystem.syncedSlides(4500); //slide action
 
 
                 }else if (gamepad2.a) {
 
-                    Subsystem.syncedWrist(0.4);
+                    RightClawSubsystem.syncedWrist(0.4);
 
                 } else if (gamepad2.dpad_left) {
 
-                    Subsystem.syncedWrist(1);
+                    RightClawSubsystem.syncedWrist(1);
 
                 }
 
