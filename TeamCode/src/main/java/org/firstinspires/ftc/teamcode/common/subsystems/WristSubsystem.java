@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class WristSubsystem extends SubsystemBase {
     private final Servo wrist;
-
+    private double groundPosition
     /*
     I've heard abt ways to get around having to make new instances every time
     a subsystem is processed; is that referencing mapping it to the Servo object
@@ -17,6 +17,18 @@ public class WristSubsystem extends SubsystemBase {
     }
     //could make a function that adjusts servo position relative to arm angle
     public void board() {
-        
+        wrist.setPosition();
+    }
+
+    public void ground() {
+        wrist.setPosition();
+    }
+
+    @Override
+    public void periodic() {
+        /*
+        put telemetry update here AFTER deciding where to put state machine enum updates
+        im guessing in the methods above but idk fs...
+         */
     }
 }
