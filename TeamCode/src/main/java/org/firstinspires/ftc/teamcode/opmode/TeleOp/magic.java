@@ -27,7 +27,7 @@ import java.lang.Math;
 
 @TeleOp(name = "main", group = "org/firstinspires/ftc/teamcode/drive/opmode/Competition")
 public class magic extends CommandOpMode {
-    final RobotHardware hardware = 
+    final RobotHardware hardware = RobotHardware.getInstance();
     public static DcMotorEx rightFront;
     public static DcMotorEx leftFront;
     public static DcMotorEx leftRear;
