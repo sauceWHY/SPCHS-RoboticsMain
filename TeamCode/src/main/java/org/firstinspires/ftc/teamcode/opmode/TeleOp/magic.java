@@ -19,6 +19,7 @@ import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWr
 import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
 
 
+import org.firstinspires.ftc.teamcode.common.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.common.subsystems.RightClawSubsystem;
 import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
 
@@ -26,7 +27,7 @@ import java.lang.Math;
 
 @TeleOp(name = "main", group = "org/firstinspires/ftc/teamcode/drive/opmode/Competition")
 public class magic extends CommandOpMode {
-    //final RobotHardware hardware = RobotHardware.get;
+    final RobotHardware hardware = 
     public static DcMotorEx rightFront;
     public static DcMotorEx leftFront;
     public static DcMotorEx leftRear;
@@ -131,7 +132,6 @@ public class magic extends CommandOpMode {
                 } else if (gamepad1.dpad_down) {
 
                     //small adjustments to slides
-
                     leftSlide.setTargetPosition(leftSlide.getCurrentPosition() - 100);
                     leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                     leftSlide.setPower(1);
