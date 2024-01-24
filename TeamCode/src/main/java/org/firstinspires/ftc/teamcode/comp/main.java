@@ -7,20 +7,22 @@
     import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+    import com.qualcomm.robotcore.hardware.DcMotorSimple;
     import com.qualcomm.robotcore.hardware.IMU;
+    import com.qualcomm.robotcore.hardware.Servo;
     import com.qualcomm.robotcore.hardware.TouchSensor;
     import com.qualcomm.robotcore.util.ElapsedTime;
-
 
     import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
     import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
     import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
-
     import java.lang.Math;
 
-    import static org.firstinspires.ftc.teamcode.RobotHardware.*;
+    import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
     import org.firstinspires.ftc.teamcode.Subsystems;
+    import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+    import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
     @TeleOp(name = "main", group = "Competition")
@@ -42,19 +44,12 @@
         public static double p = 0.003, i = 0, d = 0.00015;
         public static double f = 0.08;
         public final double ticks_per_rev = 537.6;
-        double Kp = 0.015;
-
         static boolean pressed = false;
-        double error;
-        double botHeading;
-        double target = 0;
         private State CurrentState;
-        private static final int PIXEL_ARM_ANGLE = 1700;
+        private static final int PIXEL_ARM_ANGLE = 1400;
         private static final int BACK_BOARD_ANGLE = 0;
-        private static final int SLIDE_EXTENDED = 4400;
+        private static final int SLIDE_EXTENDED = 1900;
         private static final int SLIDE_START_POS = 50;
-        double minSafeVoltage = 6.5;
-
 
 
 
@@ -63,7 +58,44 @@
         @Override
         public void runOpMode() throws InterruptedException {
 
-            initializeHardware();
+            SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+            // Drive Motors
+            rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+            leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+            leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+            rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+            leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+            rightRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+            leftRear.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+            leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            leftRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            rightFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            rightRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+
+            // Slide Motors
+            slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
+            slideExtension.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            hangingMotor = hardwareMap.get(DcMotorEx.class, "hangingMotor");
+            hangingMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            hangingMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            slidePivot = hardwareMap.get(DcMotorEx.class, "slidePivot");
+            slidePivot.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+            slidePivot.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+            // Servos
+            wrist = hardwareMap.get(Servo.class, "wrist");
+            wrist.setPosition(1);
+            leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+            rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+            rightClaw.setPosition(0.6);
+            leftClaw.setPosition(0.17);
+
+            //Sensor
+            touch = hardwareMap.get(TouchSensor.class, "touch");
 
             IMU imu = hardwareMap.get(IMU.class, "imu");
             IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -71,14 +103,8 @@
                     RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
             imu.initialize(parameters);
             controller = new PIDController(p, i, d);
-            init();
             Subsystems.init();
-            double botHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).firstAngle;
-            if (gamepad1.right_stick_x != 0) {
 
-                target = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS).firstAngle;
-
-            }
 
 
 
@@ -91,76 +117,67 @@
             if (opModeIsActive()) {
 
                 runtime.reset();
-                StateTime.reset();
                 State state = State.INITIAL;
+                StateTime.reset();
 
                 while (opModeIsActive()) {
 
-                    telemetry.addData("Status", "Run Time: " + runtime.toString());
-                    telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
-                    telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
-                    telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
-                    telemetry.addData("posleftWrist", leftWrist.getPosition());
-                    telemetry.addData("posrightWrist", rightWrist.getPosition());
+                    telemetry.addData("Status", "Run Time: " + runtime);
+                    telemetry.addData("posslide", slideExtension.getCurrentPosition());
+                    telemetry.addData("poshangingMotor", hangingMotor.getCurrentPosition());
+                    telemetry.addData("posslidePivot", slidePivot.getCurrentPosition());
+                    telemetry.addData("posleftWrist", wrist.getPosition());
                     telemetry.addData("posrightClaw", rightClaw.getPosition());
                     telemetry.addData("posleftClaw", leftClaw.getPosition());
-                    telemetry.addData("armVoltage", armmotor.getCurrent());
-                    telemetry.addData("hangingVoltage", leftSlide.getCurrent());
-                    telemetry.addData("slideVoltage", rightSlide.getCurrent());
+                    telemetry.addData("armVoltage", slidePivot.getCurrent(CurrentUnit.AMPS));
+                    telemetry.addData("slideVoltage", slideExtension.getCurrent(CurrentUnit.AMPS));
+                    telemetry.addData("hangingVoltage", hangingMotor.getCurrent(CurrentUnit.AMPS));
+                    telemetry.update();
 
                     if (gamepad1.right_trigger > 0.5 && gamepad1.left_trigger > 0.5) {
 
                         StateTime.reset();
-                        state = State.BACKBOARD
-
-                    }
-                    if (getBatteryVoltage() < minSafeVoltage) {
-
-                        telemetry.addData("Low Battery", "Voltage below safe level. Failsafe activated.");
-                        telemetry.update();
-                        StateTime.reset();
-                        state = State.BACKBOARD
+                        state = State.BACKBOARD;
 
                     }
 
-                    switch (CurrentState) {
+                    switch (state) {
 
                         case INITIAL:
-                            rightClaw.setPosition(0.70);
-                            leftClaw.setPosition(0.09);
+
                             state = State.BACKBOARD;
                             break;
 
                         case BACKBOARD:
 
-                            Subsystems.armPosition(0);
-                            Subsystems.syncedSlides(0);
+                            Subsystems.slideAngle(0);
+                            Subsystems.slideExtension(0);
 
-                            if (gamepad1.right_bumper && Math.abs(armmotor.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.SLIDE_EXTENDED;
 
                             }
-                            if (gamepad1.b && Math.abs(armmotor.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.PIXEL_PICKUP;
 
                             }
-                            if (gamepad1.y && Math.abs(armmotor.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.y && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.HANG;
 
                             }
-                            if (gamepad2.y && Math.abs(armmotor.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad2.y && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.DRONE;
 
                             }
-                            if (gamepad1.dpad_left && Math.abs(armmotor.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.dpad_left && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.GETTING_UNDER;
@@ -171,7 +188,7 @@
 
                         case SLIDE_EXTENDED:
 
-                            Subsystems.slideRightPosition(4400);
+                            Subsystems.slideExtension(1900);
 
                             if (gamepad1.left_bumper) {
 
@@ -181,33 +198,35 @@
                             }
                             if (gamepad1.dpad_up) {
 
-                                rightSlide.setTargetPosition(rightSlide.getCurrentPosition() + 100);
-                                rightSlide.setPower(1);
+                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() + 100);
+                                slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                                slideExtension.setPower(1);
 
                             }
                             if (gamepad1.dpad_down) {
 
-                                rightSlide.setTargetPosition(rightSlide.getCurrentPosition() - 100);
-                                rightSlide.setPower(1);
+                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() - 100);
+                                slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+                                slideExtension.setPower(1);
 
                             }
 
                             break;
                         case PIXEL_PICKUP:
 
-                            Subsystems.armPosition(1200);
+                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
                             if (StateTime.time() > 0.2) {
 
-                                Subsystems.slideRightPosition(SLIDE_EXTENDED);
+                                Subsystems.slideExtension(SLIDE_EXTENDED);
 
                             }
-                            if (StateTime.time() > 0.5) {
+                            if (StateTime.time() > 0.4) {
 
-                                Subsystems.syncedWrist(0.95);
+                                wrist.setPosition(0.6);
 
                             }
-                            if (gamepad1.x && Math.abs(rightSlide.getCurrentPosition()) >= 3500) {
+                            if (gamepad1.x && Math.abs(slideExtension.getCurrentPosition()) >= 3500) {
 
                                 StateTime.reset();
                                 state = State.BACKBOARD;
@@ -215,24 +234,24 @@
                             }
                             if (gamepad2.a) {
 
-                                rightClaw.setPosition(0.2);
-                                leftClaw.setPosition(0.5);
+                                rightClaw.setPosition(0.3);
+                                leftClaw.setPosition(0.6);
 
                             }
                             if (gamepad2.b) {
 
-                                rightClaw.setPosition(0.70);
-                                leftClaw.setPosition(0.09);
+                                rightClaw.setPosition(0.6);
+                                leftClaw.setPosition(0.17);
 
                             }
                             if (gamepad2.right_bumper) {
 
-                                rightClaw.setPosition(0.62);
+                                rightClaw.setPosition(0.6);
 
                             }
                             if (gamepad2.left_bumper) {
 
-                                leftClaw.setPosition(0.12);
+                                leftClaw.setPosition(0.17);
 
                             }
 
@@ -241,13 +260,15 @@
 
                         case HANG:
 
-                            Subsystems.slideLeftPosition(3000);
-
+                            Subsystems.hangingArm(3900);
                             if (gamepad1.y) {
-
-                                Subsystems.slideLeftPosition(500);
+                                Subsystems.hangingArm(3900);
+                            }
+                            if (gamepad1.a) {
+                                Subsystems.hangingArm(300);
 
                             }
+                            
                             if (gamepad1.x) {
 
                                 StateTime.reset();
@@ -262,7 +283,7 @@
                             if (StateTime.time() > 1) {
 
                                 StateTime.reset();
-                                state = State.BACKBOARD
+                                state = State.BACKBOARD;
 
                             }
 
@@ -276,73 +297,20 @@
 
                         telemetry.addData("Touch Sensor", "Is Pressed");
                         telemetry.update();
-                        if (rightSlide.getPower() <= 0) {
-                            rightSlide.setPower(0);
+                        if (slideExtension.getPower() <= 0) {
+                            slideExtension.setPower(0);
                         }
-                        rightSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-\                        pressed = true;
+                        slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                        pressed = true;
 
                     }
-
-
-                    //////////////////////////////////////////////////////////////
-/*
-                    if (gamepad2.x) {
-                        c = c + 1;
-                        if (c == 1000) {
-                           // drone.setPosition(0.9);
-                        }
-                    } else {
-                        // drone.setPosition(0.65);
-                        c = 0;
-                    }
-
-                    if (0.4 <= (h - (-gamepad1.left_stick_y / 1000)) && (h - (-gamepad1.left_stick_y / 1000)) <= 1) {
-                        h = h - (-gamepad1.left_stick_y / 1000);
-                    }
-
-                    if (0.30 <= (b - (k / 1000)) && (b - (k / 1000)) <= 0.80) {
-                        b = b - (k / 1000);
-                    }
-                    //hand.setPosition(k);
-                    //arm.setPosition(h);
-
-
- */
-
-                    ///////////////////////////////////////////////////////
-
-
-
-
-
-
+                    
 
                     double y = -gamepad2.left_stick_y; // Remember, y stick value is reversed
-                    double x = gamepad2.left_stick_x * 1.1; // Counteract imperfect strafing
+                    double x = gamepad2.left_stick_x * 1.1 ; // Counteract imperfect strafing
                     double rx = gamepad2.right_stick_x * 0.59;
 
-                    double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-                    double frontLeftPower = ((y + x + rx)) / denominator;
-                    double backLeftPower = ((y - x + rx)) / denominator;
-                    double frontRightPower = ((y - x - rx)) / denominator;
-                    double backRightPower = ((y + x - rx)) / denominator;
 
-                    error = -Math.toDegrees(botHeading) + Math.toDegrees(target);
-                    frontLeftPower += error * Kp;
-                    backLeftPower += error * Kp;
-                    frontRightPower += -error * Kp;
-                    backRightPower += -error * Kp;
-
-                    // Set motor powers
-                    leftFront.setPower(frontLeftPower);
-                    leftRear.setPower(backLeftPower);
-                    rightFront.setPower(frontRightPower);
-                    rightRear.setPower(backRightPower);
-
-
-
-                    /*
                     double theta = Math.atan2(y, x);
                     double power = Math.hypot(x, y);
                     double sin = Math.sin(theta - Math.PI / 4);
@@ -359,7 +327,12 @@
                         backLeftPower /= power + rx;
                         backRightPower /= power + rx;
                     }
-*/
+
+                    // Set motor powers
+                    leftFront.setPower(frontLeftPower);
+                    leftRear.setPower(backLeftPower);
+                    rightFront.setPower(frontRightPower);
+                    rightRear.setPower(backRightPower);
 
 
 
