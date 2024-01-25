@@ -3,12 +3,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
-import static org.firstinspires.ftc.teamcode.RobotHardware.*;
+import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
 public class Subsystems extends SubsystemBase {
@@ -25,55 +21,45 @@ public class Subsystems extends SubsystemBase {
 
     }
 
-    public static void armPosition(int armTarget) {
+    public static void hangingArm(int armTarget) {
 
-        armmotor.setTargetPosition(armTarget);
-        armmotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        hangingMotor.setTargetPosition(armTarget);
+        hangingMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
-        int armPos = armmotor.getCurrentPosition();
+        int armPos = hangingMotor.getCurrentPosition();
         double pid = controller.calculate(armPos, armTarget);
         double ff = Math.cos(Math.toRadians(armPos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        armmotor.setPower(power);
+        hangingMotor.setPower(power);
 
     }
 
-    public static void slideLeftPosition(int slideLeftTarget) {
-        leftSlide.setTargetPosition(slideLeftTarget);
-        leftSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+    public static void slideExtension(int slideTarget) {
+        slideExtension.setTargetPosition(slideTarget);
+        slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
-        int slidePos = leftSlide.getCurrentPosition();
-        double pid = controller.calculate(slidePos, slideLeftTarget);
+        int slidePos = slideExtension.getCurrentPosition();
+        double pid = controller.calculate(slidePos, slideTarget);
         double ff = Math.cos(Math.toRadians(slidePos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        leftSlide.setPower(power);
+        slideExtension.setPower(power);
     }
 
-    public static void slideRightPosition(int slideRightTarget) {
-        rightSlide.setTargetPosition(slideRightTarget);
-        rightSlide.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+    public static void slideAngle(int slideArmTarget) {
+        slidePivot.setTargetPosition(slideArmTarget);
+        slidePivot.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
-        int slidePos = rightSlide.getCurrentPosition();
-        double pid = controller.calculate(slidePos, slideRightTarget);
-        double ff = Math.cos(Math.toRadians(slidePos / ticks_per_rev)) * f;
+        int slideArmPos = slidePivot.getCurrentPosition();
+        double pid = controller.calculate(slideArmPos, slideArmTarget);
+        double ff = Math.cos(Math.toRadians(slideArmPos / ticks_per_rev)) * f;
 
         double power = pid + ff;
 
-        rightSlide.setPower(power);
+        slidePivot.setPower(power);
     }
 
-    public static void syncedSlides(int slideTarget) {
-        slideRightPosition(slideTarget);
-        slideLeftPosition(slideTarget);
-    }
-
-    public static void syncedWrist(double wrist) {
-        leftWrist.setPosition(wrist);
-        rightWrist.setDirection(Servo.Direction.REVERSE);
-        rightWrist.setPosition(wrist);
-    }
 }

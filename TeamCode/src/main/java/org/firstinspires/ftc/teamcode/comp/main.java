@@ -1,6 +1,7 @@
     package org.firstinspires.ftc.teamcode.comp;
 
 
+    import com.acmerobotics.roadrunner.geometry.Pose2d;
     import com.arcrobotics.ftclib.controller.PIDController;
     import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -32,7 +33,6 @@
             INITIAL,
             PIXEL_PICKUP,
             SLIDE_EXTENDED,
-            GETTING_UNDER,
             BACKBOARD,
             HANG,
             DRONE,
@@ -46,10 +46,10 @@
         public final double ticks_per_rev = 537.6;
         static boolean pressed = false;
         private State CurrentState;
-        private static final int PIXEL_ARM_ANGLE = 1400;
+        private static final int PIXEL_ARM_ANGLE = 3000;
         private static final int BACK_BOARD_ANGLE = 0;
-        private static final int SLIDE_EXTENDED = 1900;
-        private static final int SLIDE_START_POS = 50;
+        private static final int SLIDE_EXTENDED = 1800;
+        private static final int SLIDE_START_POS = 0;
 
 
 
@@ -88,7 +88,7 @@
 
             // Servos
             wrist = hardwareMap.get(Servo.class, "wrist");
-            wrist.setPosition(1);
+            wrist.setPosition(0);
             leftClaw = hardwareMap.get(Servo.class, "leftClaw");
             rightClaw = hardwareMap.get(Servo.class, "rightClaw");
             rightClaw.setPosition(0.6);
@@ -104,6 +104,7 @@
             imu.initialize(parameters);
             controller = new PIDController(p, i, d);
             Subsystems.init();
+            Pose2d poseEstimate = drive.getPoseEstimate();
 
 
 
@@ -117,11 +118,10 @@
             if (opModeIsActive()) {
 
                 runtime.reset();
-                State state = State.INITIAL;
+                State state = State.BACKBOARD;
                 StateTime.reset();
 
                 while (opModeIsActive()) {
-
                     telemetry.addData("Status", "Run Time: " + runtime);
                     telemetry.addData("posslide", slideExtension.getCurrentPosition());
                     telemetry.addData("poshangingMotor", hangingMotor.getCurrentPosition());
@@ -143,15 +143,14 @@
 
                     switch (state) {
 
-                        case INITIAL:
-
-                            state = State.BACKBOARD;
-                            break;
-
                         case BACKBOARD:
 
                             Subsystems.slideAngle(0);
                             Subsystems.slideExtension(0);
+
+                            if (slideExtension.getCurrentPosition() <= 60) {
+                                wrist.setPosition(0);
+                            }
 
                             if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
@@ -177,13 +176,6 @@
                                 state = State.DRONE;
 
                             }
-                            if (gamepad1.dpad_left && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
-
-                                StateTime.reset();
-                                state = State.GETTING_UNDER;
-
-                            }
-
                             break;
 
                         case SLIDE_EXTENDED:
@@ -210,28 +202,6 @@
                                 slideExtension.setPower(1);
 
                             }
-
-                            break;
-                        case PIXEL_PICKUP:
-
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-
-                            if (StateTime.time() > 0.2) {
-
-                                Subsystems.slideExtension(SLIDE_EXTENDED);
-
-                            }
-                            if (StateTime.time() > 0.4) {
-
-                                wrist.setPosition(0.6);
-
-                            }
-                            if (gamepad1.x && Math.abs(slideExtension.getCurrentPosition()) >= 3500) {
-
-                                StateTime.reset();
-                                state = State.BACKBOARD;
-
-                            }
                             if (gamepad2.a) {
 
                                 rightClaw.setPosition(0.3);
@@ -242,6 +212,48 @@
 
                                 rightClaw.setPosition(0.6);
                                 leftClaw.setPosition(0.17);
+
+                            }
+                            if (gamepad2.right_bumper) {
+
+                                rightClaw.setPosition(0.6);
+
+                            }
+                            if (gamepad2.left_bumper) {
+
+                                leftClaw.setPosition(0.17);
+
+                            }
+
+                            break;
+                        case PIXEL_PICKUP:
+
+                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            wrist.setPosition(0.6);
+
+
+                            if (StateTime.time() > 1) {
+
+                                Subsystems.slideExtension(SLIDE_EXTENDED);
+
+                            }
+
+                            if (gamepad1.x && Math.abs(slideExtension.getCurrentPosition()) >= 1500) {
+
+                                StateTime.reset();
+                                state = State.BACKBOARD;
+
+                            }
+                            if (gamepad2.a) {
+
+                                rightClaw.setPosition(0.3);
+                                leftClaw.setPosition(0.55);
+
+                            }
+                            if (gamepad2.b) {
+
+                                rightClaw.setPosition(0.62);
+                                leftClaw.setPosition(0.16);
 
                             }
                             if (gamepad2.right_bumper) {
