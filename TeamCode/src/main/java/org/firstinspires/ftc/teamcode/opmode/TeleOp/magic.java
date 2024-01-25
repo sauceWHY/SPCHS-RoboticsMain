@@ -89,7 +89,6 @@ public class magic extends CommandOpMode {
         telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
         telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
         telemetry.update();
-        RightClawSubsystem.initialize();
 
 
         //////////////////////////////////////////////////////////////////
