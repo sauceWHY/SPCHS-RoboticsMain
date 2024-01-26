@@ -21,8 +21,10 @@
     import java.lang.Math;
 
     import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+    import org.firstinspires.ftc.teamcode.PoseStorage;
     import org.firstinspires.ftc.teamcode.Subsystems;
     import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
     import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
@@ -36,7 +38,7 @@
             BACKBOARD,
             HANG,
             DRONE,
-            DONE
+            UNDER_BAR, SLIDE_RETRACT, DONE
         }
         public final ElapsedTime runtime = new ElapsedTime();
         private final ElapsedTime StateTime = new ElapsedTime();
@@ -47,18 +49,29 @@
         static boolean pressed = false;
         private State CurrentState;
         private static final int PIXEL_ARM_ANGLE = 3000;
-        private static final int BACK_BOARD_ANGLE = 0;
-        private static final int SLIDE_EXTENDED = 1800;
+        private static final int BACK_BOARD_ANGLE = 1200;
+        private static final int ARM_START_POSITION = 0;
+
+        private static final int ARM_RESTING = 2200;
+        private static final int SLIDE_EXTENDED = 1900;
         private static final int SLIDE_START_POS = 0;
+        private static final double LEFT_CLAW_OPEN = 0.6;
+        private static final double LEFT_CLAW_CLOSE = 0.17;
+        private static final double RIGHT_CLAW_OPEN = 0.3;
+        private static final double RIGHT_CLAW_CLOSE = 0.6;
+        private static final double WRIST_PIXEL_PICKUP = 0.43;
+        private static final double WRIST_BACKBOARD = 0.55;
+        private static final double WRIST_DOWN = 0;
+        private static final double WRIST_UP = 1;
 
 
-
+        protected SampleMecanumDrive drive;
 
 
         @Override
         public void runOpMode() throws InterruptedException {
 
-            SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+            drive = new SampleMecanumDrive(hardwareMap);
             // Drive Motors
             rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
             leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
@@ -100,11 +113,10 @@
             IMU imu = hardwareMap.get(IMU.class, "imu");
             IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                     RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
+                    RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
             imu.initialize(parameters);
             controller = new PIDController(p, i, d);
             Subsystems.init();
-            Pose2d poseEstimate = drive.getPoseEstimate();
 
 
 
@@ -123,17 +135,28 @@
 
                 while (opModeIsActive()) {
                     telemetry.addData("Status", "Run Time: " + runtime);
+                    telemetry.addData("Status", "State Time: " + StateTime);
+                    telemetry.addData("Status", "State: " + state);
                     telemetry.addData("posslide", slideExtension.getCurrentPosition());
                     telemetry.addData("poshangingMotor", hangingMotor.getCurrentPosition());
                     telemetry.addData("posslidePivot", slidePivot.getCurrentPosition());
                     telemetry.addData("posleftWrist", wrist.getPosition());
                     telemetry.addData("posrightClaw", rightClaw.getPosition());
                     telemetry.addData("posleftClaw", leftClaw.getPosition());
-                    telemetry.addData("armVoltage", slidePivot.getCurrent(CurrentUnit.AMPS));
-                    telemetry.addData("slideVoltage", slideExtension.getCurrent(CurrentUnit.AMPS));
-                    telemetry.addData("hangingVoltage", hangingMotor.getCurrent(CurrentUnit.AMPS));
+                    telemetry.addData("slidePower", slideExtension.getPower());
                     telemetry.update();
 
+                    if (touch.isPressed() && !pressed) {
+
+                        telemetry.addData("Touch Sensor", "Is Pressed");
+                        telemetry.update();
+                        if (slideExtension.getPower() <= 0) {
+                            slideExtension.setPower(0);
+                        }
+                        slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                        pressed = true;
+
+                    }
                     if (gamepad1.right_trigger > 0.5 && gamepad1.left_trigger > 0.5) {
 
                         StateTime.reset();
@@ -145,42 +168,61 @@
 
                         case BACKBOARD:
 
+                            Subsystems.hangingArm(0);
                             Subsystems.slideAngle(0);
                             Subsystems.slideExtension(0);
 
                             if (slideExtension.getCurrentPosition() <= 60) {
-                                wrist.setPosition(0);
+                                wrist.setPosition(WRIST_DOWN);
                             }
 
-                            if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.SLIDE_EXTENDED;
 
                             }
-                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.left_bumper) {
+
+                                StateTime.reset();
+                                state = State.SLIDE_RETRACT;
+
+                            }
+                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.PIXEL_PICKUP;
 
                             }
-                            if (gamepad1.y && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.y && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.HANG;
 
                             }
-                            if (gamepad2.y && Math.abs(slidePivot.getCurrentPosition() - BACK_BOARD_ANGLE) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad2.y && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.DRONE;
+
+                            }
+                            if (gamepad1.dpad_left) {
+
+                                StateTime.reset();
+                                state = State.UNDER_BAR;
 
                             }
                             break;
 
                         case SLIDE_EXTENDED:
 
-                            Subsystems.slideExtension(1900);
+                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
+                            Subsystems.slideExtension(1600);
+                            wrist.setPosition(WRIST_BACKBOARD);
+
+                            if (gamepad1.left_trigger > 0.5) {
+                                Subsystems.slideAngle(ARM_START_POSITION);
+                            }
 
                             if (gamepad1.left_bumper) {
 
@@ -190,46 +232,60 @@
                             }
                             if (gamepad1.dpad_up) {
 
-                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() + 100);
+                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() - 100);
                                 slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                                 slideExtension.setPower(1);
 
                             }
                             if (gamepad1.dpad_down) {
 
-                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() - 100);
+                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() + 100);
                                 slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
                                 slideExtension.setPower(1);
 
                             }
                             if (gamepad2.a) {
 
-                                rightClaw.setPosition(0.3);
-                                leftClaw.setPosition(0.6);
+                                rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
 
                             }
                             if (gamepad2.b) {
 
-                                rightClaw.setPosition(0.6);
-                                leftClaw.setPosition(0.17);
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
                             if (gamepad2.right_bumper) {
 
-                                rightClaw.setPosition(0.6);
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
 
                             }
                             if (gamepad2.left_bumper) {
 
-                                leftClaw.setPosition(0.17);
+                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
 
                             break;
+
+                        case SLIDE_RETRACT:
+
+                            Subsystems.slideExtension(-3000);
+
+                            if (touch.isPressed()) {
+
+                                StateTime.reset();
+                                state = State.BACKBOARD;
+
+                            }
+
+                            break;
+
                         case PIXEL_PICKUP:
 
                             Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-                            wrist.setPosition(0.6);
+                            wrist.setPosition(WRIST_PIXEL_PICKUP);
 
 
                             if (StateTime.time() > 1) {
@@ -238,7 +294,7 @@
 
                             }
 
-                            if (gamepad1.x && Math.abs(slideExtension.getCurrentPosition()) >= 1500) {
+                            if (gamepad1.x) {
 
                                 StateTime.reset();
                                 state = State.BACKBOARD;
@@ -246,24 +302,24 @@
                             }
                             if (gamepad2.a) {
 
-                                rightClaw.setPosition(0.3);
-                                leftClaw.setPosition(0.55);
+                                rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
 
                             }
                             if (gamepad2.b) {
 
-                                rightClaw.setPosition(0.62);
-                                leftClaw.setPosition(0.16);
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
                             if (gamepad2.right_bumper) {
 
-                                rightClaw.setPosition(0.6);
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
 
                             }
                             if (gamepad2.left_bumper) {
 
-                                leftClaw.setPosition(0.17);
+                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
 
@@ -276,10 +332,7 @@
                             if (gamepad1.y) {
                                 Subsystems.hangingArm(3900);
                             }
-                            if (gamepad1.a) {
-                                Subsystems.hangingArm(300);
 
-                            }
                             
                             if (gamepad1.x) {
 
@@ -300,22 +353,26 @@
                             }
 
                             break;
+
+                        case UNDER_BAR:
+
+                            Subsystems.slideAngle(ARM_RESTING);
+
+                            if (gamepad1.x) {
+
+                                StateTime.reset();
+                                state = State.BACKBOARD;
+
+                            }
+
+                            break;
+
                         case DONE:
 
                             break;
 
                 }
-                    if (touch.isPressed() && !pressed) {
 
-                        telemetry.addData("Touch Sensor", "Is Pressed");
-                        telemetry.update();
-                        if (slideExtension.getPower() <= 0) {
-                            slideExtension.setPower(0);
-                        }
-                        slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                        pressed = true;
-
-                    }
                     
 
                     double y = -gamepad2.left_stick_y; // Remember, y stick value is reversed

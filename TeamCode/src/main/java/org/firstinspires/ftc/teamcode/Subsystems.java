@@ -37,7 +37,7 @@ public class Subsystems extends SubsystemBase {
     }
 
     public static void slideExtension(int slideTarget) {
-        slideExtension.setTargetPosition(slideTarget);
+        slideExtension.setTargetPosition(-slideTarget);
         slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         controller.setPID(p, i, d);
         int slidePos = slideExtension.getCurrentPosition();
