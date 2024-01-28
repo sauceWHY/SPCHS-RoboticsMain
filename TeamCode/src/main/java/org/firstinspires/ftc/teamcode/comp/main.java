@@ -54,6 +54,8 @@
 
         private static final int ARM_RESTING = 2200;
         private static final int SLIDE_EXTENDED = 1900;
+        private static final int SLIDE_BACKBOARD = 1600;
+
         private static final int SLIDE_START_POS = 0;
         private static final double LEFT_CLAW_OPEN = 0.6;
         private static final double LEFT_CLAW_CLOSE = 0.17;
@@ -217,7 +219,7 @@
                         case SLIDE_EXTENDED:
 
                             Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                            Subsystems.slideExtension(1600);
+                            Subsystems.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
                             if (gamepad1.left_trigger > 0.5) {
