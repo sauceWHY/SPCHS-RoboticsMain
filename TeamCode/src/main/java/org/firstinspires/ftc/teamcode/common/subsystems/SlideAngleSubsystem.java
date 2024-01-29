@@ -10,8 +10,8 @@ public class SlideAngleSubsystem extends SubsystemBase {
     private final DcMotor slideAngle;
     private final int boardAngle = 2400;
     private final int pixelArmAngle = 3125;
-    private final int ARM_RESTING_POSITION = 0;
-    private final int ARM_UNDER_BAR = 2200;
+    private final int armRestingPosition = 0;
+    private final int armUnderBar = 2200;
 
     public SlideAngleSubsystem(final HardwareMap hMap, final String name) {
         slideAngle = hMap.get(DcMotor.class, name);
@@ -19,5 +19,14 @@ public class SlideAngleSubsystem extends SubsystemBase {
 
     public void setBoardAngle() {
         slideAngle.setTargetPosition(boardAngle);
+    }
+    public void setPixelArmAngle() {
+        slideAngle.setTargetPosition(pixelArmAngle);
+    }
+    public void setArmRestingPosition() {
+        slideAngle.setTargetPosition(armRestingPosition);
+    }
+    public void setArmUnderBar() {
+        slideAngle.setTargetPosition(armUnderBar);
     }
 }
