@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common;
+package org.firstinspires.ftc.teamcode.common.hardware;
 
 import androidx.annotation.NonNull;
 
@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.common.util.Encoder;
 
 import java.util.Arrays;

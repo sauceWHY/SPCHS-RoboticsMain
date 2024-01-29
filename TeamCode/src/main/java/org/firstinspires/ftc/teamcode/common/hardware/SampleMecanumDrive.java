@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common;
+package org.firstinspires.ftc.teamcode.common.hardware;
 
 import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_ANG_ACCEL;
