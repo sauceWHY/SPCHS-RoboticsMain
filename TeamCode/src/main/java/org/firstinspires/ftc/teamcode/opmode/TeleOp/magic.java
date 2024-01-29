@@ -21,7 +21,7 @@ import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightW
 
 import org.firstinspires.ftc.teamcode.common.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.common.subsystems.RightClawSubsystem;
-import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
 
 import java.lang.Math;
 

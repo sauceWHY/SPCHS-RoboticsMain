@@ -20,7 +20,7 @@ import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightS
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.common.subsystems.RightClawSubsystem;
 import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineRed;
-import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;

@@ -8,7 +8,7 @@ public class GrabBothClaw extends SequentialCommandGroup {
 
     public GrabBothClaw() {
         super(
-                
+
         );
     }
 }

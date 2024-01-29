@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.common.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
 
 /*
