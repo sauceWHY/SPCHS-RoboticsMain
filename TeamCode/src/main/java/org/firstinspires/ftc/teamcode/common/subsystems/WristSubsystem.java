@@ -6,7 +6,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class WristSubsystem extends SubsystemBase {
     private final Servo wrist;
-    private double groundPosition
+    private double startPos = 0.46;
+    private double boardAngle = 0.73;
+
     /*
     I've heard abt ways to get around having to make new instances every time
     a subsystem is processed; is that referencing mapping it to the Servo object
@@ -16,12 +18,12 @@ public class WristSubsystem extends SubsystemBase {
         wrist = hMap.get(Servo.class, name);
     }
     //could make a function that adjusts servo position relative to arm angle
-    public void board() {
-        wrist.setPosition();
+    public void setStartPos() {
+        wrist.setPosition(startPos);
     }
 
-    public void ground() {
-        wrist.setPosition();
+    public void setBoardAngle() {
+        wrist.setPosition(boardAngle);
     }
 
     @Override
