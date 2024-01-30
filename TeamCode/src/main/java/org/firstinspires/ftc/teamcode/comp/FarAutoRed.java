@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
 import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
@@ -220,7 +222,7 @@ public class FarAutoRed extends LinearOpMode {
 
                 TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                        .lineToConstantHeading(new Vector2d(-46.5, -55))
+                        .lineToLinearHeading(new Pose2d(-39, -48, Math.toRadians(120)))
                         .build();
                 TrajectorySequence leftTape2 = drive.trajectorySequenceBuilder(startPoseRed)
 
@@ -496,6 +498,7 @@ public class FarAutoRed extends LinearOpMode {
 
                 drive.update();
 
+                currentPose = drive.getPoseEstimate();
 
             }
         }

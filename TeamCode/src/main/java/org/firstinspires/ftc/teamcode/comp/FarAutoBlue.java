@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.comp;
 
+import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
 import static org.firstinspires.ftc.teamcode.Robot.leftClaw;
 import static org.firstinspires.ftc.teamcode.Robot.rightClaw;
 import static org.firstinspires.ftc.teamcode.Robot.slideExtension;
@@ -239,30 +240,15 @@ public class FarAutoBlue extends LinearOpMode {
 
                 // white pixel stacks (R,L, & M indicating starting point, all same end location):
 
-                TrajectorySequence whiteStackL = drive.trajectorySequenceBuilder(leftTape.end())
-                        .lineToLinearHeading(new Pose2d(-52, 48.5, Math.toRadians(212)))
-                        .build();
-
-                TrajectorySequence whiteStackM = drive.trajectorySequenceBuilder(middleTape.end())
-                        .lineToLinearHeading(new Pose2d(-52, 48.5, Math.toRadians(212)))
-                        .build();
-
-                TrajectorySequence whiteStackR = drive.trajectorySequenceBuilder(rightTape.end())
-                        .lineToLinearHeading(new Pose2d(-52, 48.5, Math.toRadians(212)))
+                TrajectorySequence whiteStack = drive.trajectorySequenceBuilder(currentPose)
+                        .lineToLinearHeading(new Pose2d(-51.5,32, Math.toRadians(180)))
                         .build();
 
                 // transition moves (to get to position before crossing mid):
 
-                TrajectorySequence posToCrossNonR = drive.trajectorySequenceBuilder(new Pose2d(-52, 48.5, Math.toRadians(212)))
+                TrajectorySequence poseToCross = drive.trajectorySequenceBuilder(currentPose)
                         .lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(33)))
                         .turn(Math.toRadians(-33))
-                        .build();
-
-                // need seperate one for right placement to avoid prop...
-                TrajectorySequence posToCrossR = drive.trajectorySequenceBuilder(new Pose2d(-52, 48.5, Math.toRadians(212)))
-                        .lineToLinearHeading(new Pose2d(-34.5, 48.5, Math.toRadians(270)))
-                        .lineToConstantHeading(new Vector2d(-34.5, 12)) // turning during this would hit prop sadge (according to MeepMeep)...
-                        .turn(Math.toRadians(90))
                         .build();
 
                 // backboard locations:
@@ -513,6 +499,9 @@ public class FarAutoBlue extends LinearOpMode {
 
                 }
 
+                drive.update();
+
+                currentPose = drive.getPoseEstimate();
 
             }
         }
