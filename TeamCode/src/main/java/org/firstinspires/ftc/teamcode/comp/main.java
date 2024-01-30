@@ -38,7 +38,7 @@
             BACKBOARD,
             HANG,
             DRONE,
-            UNDER_BAR, SLIDE_RETRACT, DONE
+            UNDER_BAR, DONE
         }
         public final ElapsedTime runtime = new ElapsedTime();
         private final ElapsedTime StateTime = new ElapsedTime();
@@ -51,6 +51,8 @@
         private static final int PIXEL_ARM_ANGLE = 3000;
         private static final int BACK_BOARD_ANGLE = 1200;
         private static final int ARM_START_POSITION = 0;
+        private static final int ARM_LOWER_BACKBOARD = 2000;
+
 
         private static final int ARM_RESTING = 2200;
         private static final int SLIDE_EXTENDED = 1900;
@@ -103,9 +105,11 @@
 
             // Servos
             wrist = hardwareMap.get(Servo.class, "wrist");
-            wrist.setPosition(0);
             leftClaw = hardwareMap.get(Servo.class, "leftClaw");
             rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+            drone = hardwareMap.get(Servo.class, "drone");
+            drone.setPosition(0.2);
+            wrist.setPosition(0);
             rightClaw.setPosition(0.6);
             leftClaw.setPosition(0.17);
 
@@ -184,13 +188,7 @@
                                 state = State.SLIDE_EXTENDED;
 
                             }
-                            if (gamepad1.left_bumper) {
-
-                                StateTime.reset();
-                                state = State.SLIDE_RETRACT;
-
-                            }
-                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 20 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.PIXEL_PICKUP;
@@ -223,13 +221,13 @@
                             wrist.setPosition(WRIST_BACKBOARD);
 
                             if (gamepad1.left_trigger > 0.5) {
-                                Subsystems.slideAngle(ARM_START_POSITION);
+                                Subsystems.slideAngle(ARM_LOWER_BACKBOARD);
                             }
 
                             if (gamepad1.left_bumper) {
 
                                 StateTime.reset();
-                                state = State.BACKBOARD;
+                                state = State.UNDER_BAR;
 
                             }
                             if (gamepad1.dpad_up) {
@@ -268,33 +266,26 @@
                                 leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
+                            if (gamepad2.right_bumper) {
 
-                            break;
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
 
-                        case SLIDE_RETRACT:
+                            }
+                            if (gamepad2.left_bumper) {
 
-                            Subsystems.slideExtension(-3000);
-
-                            if (touch.isPressed()) {
-
-                                StateTime.reset();
-                                state = State.BACKBOARD;
+                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
 
                             break;
+
 
                         case PIXEL_PICKUP:
 
                             Subsystems.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
+                            Subsystems.slideExtension(SLIDE_EXTENDED);
 
-
-                            if (StateTime.time() > 1) {
-
-                                Subsystems.slideExtension(SLIDE_EXTENDED);
-
-                            }
 
                             if (gamepad1.x) {
 
@@ -324,6 +315,12 @@
                                 leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
+                            if (gamepad1.dpad_left) {
+
+                                StateTime.reset();
+                                state = State.UNDER_BAR;
+
+                            }
 
 
                             break;
@@ -347,7 +344,10 @@
 
                         case DRONE:
 
-                            if (StateTime.time() > 1) {
+                            Subsystems.hangingArm(2000);
+                            drone.setPosition(1);
+
+                            if (StateTime.time() > 5) {
 
                                 StateTime.reset();
                                 state = State.BACKBOARD;
@@ -359,11 +359,25 @@
                         case UNDER_BAR:
 
                             Subsystems.slideAngle(ARM_RESTING);
+                            Subsystems.slideExtension(0);
+                            wrist.setPosition(WRIST_DOWN);
 
                             if (gamepad1.x) {
 
                                 StateTime.reset();
                                 state = State.BACKBOARD;
+
+                            }
+                            if (gamepad1.b) {
+
+                                StateTime.reset();
+                                state = State.PIXEL_PICKUP;
+
+                            }
+                            if (gamepad1.right_bumper) {
+
+                                StateTime.reset();
+                                state = State.SLIDE_EXTENDED;
 
                             }
 

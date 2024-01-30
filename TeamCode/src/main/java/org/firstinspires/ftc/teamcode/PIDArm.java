@@ -1,21 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 @TeleOp
@@ -25,62 +17,62 @@ public class PIDArm extends OpMode {
     public static double f = 0.08;
 
     public static int armTarget = 0;
-    public static int leftSlideTarget = 0;
-    public static int rightSlideTarget = 0;
+    public static int slideExtensionTarget = 0;
+    public static int hangingMotorTarget = 0;
 
     private final double ticks_per_rev = 537.6;
-    private DcMotorEx armmotor;
-    private DcMotorEx leftSlide;
-    private DcMotorEx rightSlide;
+    private DcMotorEx slidePivot;
+    private DcMotorEx slideExtension;
+    private DcMotorEx hangingMotor;
 
     public void init() {
         controller = new PIDController(p, i, d);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        armmotor = hardwareMap.get(DcMotorEx.class, "armmotor");
-        leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        slidePivot = hardwareMap.get(DcMotorEx.class, "slidePivot");
+        slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
+        hangingMotor = hardwareMap.get(DcMotorEx.class, "hangingMotor");
     }
         public void loop() {
-            armmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            armmotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            slidePivot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            slidePivot.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             controller.setPID(p, i, d);
-            int armPos = armmotor.getCurrentPosition();
+            int armPos = slidePivot.getCurrentPosition();
             double pidArm = controller.calculate(armPos, armTarget);
             double ffArm = Math.cos(Math.toRadians(armPos / ticks_per_rev)) * f;
 
             double powerArm = pidArm + ffArm;
 
-            armmotor.setPower(powerArm);
+            slidePivot.setPower(powerArm);
 
             telemetry.addData("armpos", armPos);
             telemetry.addData("armtarget", armTarget);
             telemetry.update();
 
             controller.setPID(p, i, d);
-            int leftSlidePos = leftSlide.getCurrentPosition();
-            double pidleftSlide = controller.calculate(leftSlidePos, leftSlideTarget);
-            double ffLeftSlide = Math.cos(Math.toRadians(leftSlideTarget / ticks_per_rev)) * f;
+            int slideExtensionPos = slideExtension.getCurrentPosition();
+            double pidslideExtension = controller.calculate(slideExtensionPos, slideExtensionTarget);
+            double ffslideExtension = Math.cos(Math.toRadians(slideExtensionTarget / ticks_per_rev)) * f;
 
-            double powerLeftSlide = pidleftSlide + ffLeftSlide;
+            double powerslideExtension = pidslideExtension + ffslideExtension;
 
-            armmotor.setPower(powerLeftSlide);
+            slidePivot.setPower(powerslideExtension);
 
-            telemetry.addData("leftpos", leftSlidePos);
-            telemetry.addData("lefttarget", leftSlideTarget);
+            telemetry.addData("leftpos", slideExtensionPos);
+            telemetry.addData("lefttarget", slideExtensionTarget);
             telemetry.update();
 
             controller.setPID(p, i, d);
-            int rightSlidePos = rightSlide.getCurrentPosition();
-            double pidRightSlide = controller.calculate(rightSlidePos, rightSlideTarget);
-            double ffRightSlide = Math.cos(Math.toRadians(rightSlideTarget / ticks_per_rev)) * f;
+            int hangingMotorPos = hangingMotor.getCurrentPosition();
+            double pidhangingMotor = controller.calculate(hangingMotorPos, hangingMotorTarget);
+            double ffhangingMotor = Math.cos(Math.toRadians(hangingMotorTarget / ticks_per_rev)) * f;
 
-            double powerRightSlide = pidRightSlide + ffRightSlide;
+            double powerhangingMotor = pidhangingMotor + ffhangingMotor;
 
-            armmotor.setPower(powerRightSlide);
+            slidePivot.setPower(powerhangingMotor);
 
-            telemetry.addData("rightpos", rightSlidePos);
-            telemetry.addData("righttarget", rightSlideTarget);
+            telemetry.addData("rightpos", hangingMotorPos);
+            telemetry.addData("righttarget", hangingMotorTarget);
             telemetry.update();
 
     }

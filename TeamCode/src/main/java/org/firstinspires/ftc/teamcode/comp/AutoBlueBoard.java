@@ -47,7 +47,11 @@
         RIGHT_CLAW_OPEN,
         DELAY_START,
         LEFT_CLAW_OPEN,
-        SLIDE_RETRACT, PIXELSTACK, PIXELSTACKGRAB, BACKTOBACKBOARD, DONE,
+        SLIDE_RETRACT,
+        PIXELSTACK,
+        PIXELSTACKGRAB,
+        BACKTOBACKBOARD,
+        DONE,
 
     }
 
@@ -91,9 +95,9 @@
     private static final int PIXEL_STACK_ANGLE = 3000;
     private static final int PIXEL_STACK_EXTENSION = 1300;
     private static final double LEFT_CLAW_OPEN = 0.6;
-    private static final double LEFT_CLAW_CLOSE = 0.17;
+    private static final double LEFT_CLAW_CLOSE = 0.14;
     private static final double RIGHT_CLAW_OPEN = 0.3;
-    private static final double RIGHT_CLAW_CLOSE = 0.6;
+    private static final double RIGHT_CLAW_CLOSE = 0.7;
     private static final double WRIST_PIXEL_PICKUP = 0.46;
     private static final double WRIST_BACKBOARD = 0.73;
     private static final double WRIST_DOWN = 0;
@@ -249,7 +253,7 @@
 
                     TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                            .lineToConstantHeading(new Vector2d(30, 58))
+                            .lineToConstantHeading(new Vector2d(29, 59))
                             .build();
 
                     TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
@@ -259,7 +263,7 @@
 
                     TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                            .lineToLinearHeading(new Pose2d(32, 48, Math.toRadians(212)))
+                            .lineToLinearHeading(new Pose2d(30, 48, Math.toRadians(217)))
                             .build();
 
                     TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
@@ -296,7 +300,7 @@
                             .build();
                     TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
 
-                            .back(75)
+                            .back(67)
                             .turn(Math.toRadians(180))
                             .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
 
@@ -315,22 +319,22 @@
                         case INITIAL:
 
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
-                            rightClaw.setPosition(0.70);
-                            leftClaw.setPosition(0.09);
+                            rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                            leftClaw.setPosition(LEFT_CLAW_CLOSE);
                             state = State.TAPE_CAMERA;
                             break;
 
                         case TAPE_CAMERA:
 
                             if (myPipeline.getRectArea() > 2000) {
-                                if (myPipeline.getRectMidpointX() < 200) {
+                                if (myPipeline.getRectMidpointX() < 270) {
 
                                     drive.followTrajectorySequenceAsync(leftTape);
                                     webcam.stopStreaming();
                                     StateTime.reset();
                                     state = State.LEFT_TAPE;
 
-                                } else if (myPipeline.getRectMidpointX() > 300) {
+                                } else if (myPipeline.getRectMidpointX() > 275) {
 
                                     drive.followTrajectorySequenceAsync(middleTape);
                                     webcam.stopStreaming();
@@ -352,8 +356,13 @@
                         case LEFT_TAPE:
 
                             Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-                            Subsystems.slideExtension(SLIDE_LEFT_TAPE);
                             wrist.setPosition(WRIST_LEFT_TAPE);
+
+                            if (StateTime.time() >= 0.5) {
+
+                                Subsystems.slideExtension(SLIDE_LEFT_TAPE);
+
+                            }
 
                             if (Math.abs(slideExtension.getCurrentPosition()) >= 1190) {
 
@@ -404,12 +413,7 @@
                                 state = State.RIGHT_CLAW_OPEN;
 
                             }
-                            if (StateTime.time() >= 1) {
 
-                                StateTime.reset();
-                                state = State.RIGHT_CLAW_OPEN;
-
-                            }
                             break;
 
                         case RIGHT_CLAW_OPEN:
@@ -460,7 +464,7 @@
                         case LEFT_CLAW_OPEN:
 
 
-                            if (StateTime.time() > 0.8) {
+                            if (StateTime.time() > 0.3) {
 
                                 leftClaw.setPosition(LEFT_CLAW_OPEN);
                                 StateTime.reset();
@@ -476,7 +480,7 @@
                                 Subsystems.slideExtension(SLIDE_START_POS);
                             }
                             if (StateTime.time() >= 0.8) {
-                                wrist.setPosition(WRIST_DOWN);
+                                //wrist.setPosition(WRIST_DOWN);
                                 drive.followTrajectorySequenceAsync(GoingThroughSide);
                                 StateTime.reset();
                                 state = State.PARK;

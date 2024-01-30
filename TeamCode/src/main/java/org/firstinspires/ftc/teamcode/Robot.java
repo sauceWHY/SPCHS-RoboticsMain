@@ -16,6 +16,7 @@ public class Robot {
     public static  Servo leftClaw;
     public static  Servo wrist;
     public static  Servo rightClaw;
+    public static  Servo drone;
     public static  TouchSensor touch;
 
     
