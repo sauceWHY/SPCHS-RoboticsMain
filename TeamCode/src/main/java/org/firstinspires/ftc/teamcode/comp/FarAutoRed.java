@@ -13,11 +13,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import static org.firstinspires.ftc.teamcode.RobotHardware.*;
+import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.Vision.ContourPipelineRed;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -29,7 +30,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.firstinspires.ftc.teamcode.Subsystems;
 
 @Autonomous(name = "FarAutoRed", group = "Competition")
-private class FarAutoRed extends LinearOpMode {
+public class FarAutoRed extends LinearOpMode {
     
     private enum State {
         INITIAL,
@@ -76,23 +77,66 @@ private class FarAutoRed extends LinearOpMode {
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
-    private static final int PIXEL_ARM_ANGLE = 1700;
-    private static final int BACK_BOARD_ANGLE = 0;
-    private static final int SLIDE_EXTENDED = 4400;
-    private static final int SLIDE_START_POS = 50;
-    private State CurrentState;
+    private static final int PIXEL_ARM_ANGLE = 3125;
+    private static final int BACK_BOARD_ANGLE = 2400;
+    private static final int ARM_RESTING_POSITION = 0;
+    private static final int ARM_UNDER_BAR = 2200;
+    private static final int SLIDE_EXTENDED = 1900;
+    private static final int SLIDE_START_POS = 0;
+    private static final int SLIDE_BACKBOARD = 1050;
+    private static final int SLIDE_LEFT_TAPE = 1200;
+    private static final int PIXEL_STACK_ANGLE = 3000;
+    private static final int PIXEL_STACK_EXTENSION = 1300;
+    private static final double LEFT_CLAW_OPEN = 0.6;
+    private static final double LEFT_CLAW_CLOSE = 0.17;
+    private static final double RIGHT_CLAW_OPEN = 0.3;
+    private static final double RIGHT_CLAW_CLOSE = 0.6;
+    private static final double WRIST_PIXEL_PICKUP = 0.46;
+    private static final double WRIST_BACKBOARD = 0.73;
+    private static final double WRIST_DOWN = 0;
+    private static final double WRIST_UP = 1;
+    private static final double WRIST_LEFT_TAPE = 0.5;
+
+    static boolean pressed = false;
+    protected SampleMecanumDrive drive;
+    Pose2d startPoseBlueBB = new Pose2d(16, 61, Math.toRadians(270));
+
 
 
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
 
-        initializeHardware();
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        leftRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        // Slide Motors
+        slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
+        slideExtension.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slidePivot = hardwareMap.get(DcMotorEx.class, "slidePivot");
+        slidePivot.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slidePivot.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Servos
+        wrist = hardwareMap.get(Servo.class, "wrist");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+        leftClaw.setPosition(LEFT_CLAW_CLOSE);
+        // Touch Sensor
+        touch = hardwareMap.get(TouchSensor.class, "touch");
 
         Subsystems.init();
 
+        drive.setPoseEstimate(startPoseBlueBB);
         // OpenCV webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -152,16 +196,20 @@ private class FarAutoRed extends LinearOpMode {
             runtime.reset();
             StateTime.reset();
             delayTimer.reset();
-            State state = State.DELAY_START;
             Board board = Board.LEFT;
+            State state;
+            if (delayStart) {
+                state = FarAutoRed.State.DELAY_START;
+            } else {
+                state = FarAutoRed.State.INITIAL;
+            }
 
 
             while (opModeIsActive() && !isStopRequested()) {
-                telemetry.addData("CurrentState", CurrentState.toString());
+                telemetry.addData("CurrentState", state.toString());
                 telemetry.addData("Status", "Run Time: " + runtime);
-                telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
-                telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
-                telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
+                telemetry.addData("posleftslide", slideExtension.getCurrentPosition());
+                telemetry.addData("posarmmotor", slidePivot.getCurrentPosition());
                 telemetry.update();
 
 
@@ -233,11 +281,11 @@ private class FarAutoRed extends LinearOpMode {
 
                         .lineToConstantHeading(new Vector2d(45.5, -5))
                         .build();
-                TrajectorySequence Drive
+                TrajectorySequence Drive;
 
 
 
-                switch (CurrentState) {
+                switch (state) {
 
                     case DELAY_START:
 
@@ -250,7 +298,7 @@ private class FarAutoRed extends LinearOpMode {
 
                     case INITIAL:
 
-                        Subsystems.syncedWrist(0);
+                        wrist.setPosition(0);
                         rightClaw.setPosition(0.70);
                         leftClaw.setPosition(0.09);
                         state = State.TAPE_CAMERA;
@@ -285,9 +333,9 @@ private class FarAutoRed extends LinearOpMode {
                     case LEFT_TAPE:
 
                         drive.followTrajectorySequenceAsync(leftTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy() && Math.abs(slidePivot.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
 
                             StateTime.reset();
                             state= State.SLIDE_EXTENSION;
@@ -300,9 +348,9 @@ private class FarAutoRed extends LinearOpMode {
                     case MIDDLE_TAPE:
 
                         drive.followTrajectorySequenceAsync(middleTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy() && Math.abs(slideExtension.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
 
                             StateTime.reset();
                             state= State.SLIDE_EXTENSION;
@@ -315,9 +363,9 @@ private class FarAutoRed extends LinearOpMode {
                     case RIGHT_TAPE:
 
                         drive.followTrajectorySequenceAsync(rightTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy() && Math.abs(slideExtension.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
 
                             StateTime.reset();
                             state= State.SLIDE_EXTENSION;
@@ -329,9 +377,9 @@ private class FarAutoRed extends LinearOpMode {
 
                     case SLIDE_EXTENSION:
 
-                        Subsystems.slideRightPosition(SLIDE_EXTENDED);
+                        Subsystems.slideExtension(SLIDE_EXTENDED);
 
-                        if (Math.abs(rightSlide.getCurrentPosition() - SLIDE_EXTENDED) <= 15) {
+                        if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_EXTENDED) <= 15) {
 
                             StateTime.reset();
                             state = State.RIGHT_CLAW_OPEN;
@@ -364,7 +412,7 @@ private class FarAutoRed extends LinearOpMode {
 
                     case BACKBOARD:
 
-                        Subsystems.armPosition(BACK_BOARD_ANGLE);
+                        Subsystems.slideAngle(BACK_BOARD_ANGLE);
 
                         switch (board) {
                             case RIGHT:
@@ -404,9 +452,9 @@ private class FarAutoRed extends LinearOpMode {
 
                     case SLIDE_RETRACT:
 
-                        Subsystems.slideRightPosition(SLIDE_START_POS);
+                        Subsystems.slideExtension(SLIDE_START_POS);
 
-                        if (Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 20) {
+                        if (Math.abs(slidePivot.getCurrentPosition() - SLIDE_START_POS) <= 20) {
 
                             if (leftPark) {
                                 if (board == Board.LEFT) {
