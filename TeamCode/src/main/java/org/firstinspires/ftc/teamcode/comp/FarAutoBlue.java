@@ -164,6 +164,40 @@ public class FarAutoBlue extends LinearOpMode {
 
         // Allow the user to select the delay time using the controller
 
+        // Starting Tape Trajectories:
+
+        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlue)
+
+                .lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(325)))
+                .build();
+
+        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlue)
+
+                .lineToConstantHeading(new Vector2d(-35, 44))
+                .build();
+
+        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlue)
+
+                .lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
+                .build();
+
+
+        // backboard locations:
+
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
+                .build();
 
 
         while (!opModeIsActive()) {
@@ -188,27 +222,6 @@ public class FarAutoBlue extends LinearOpMode {
             }
         }
 
-        /* Trajectories either consist of vectors or poses. Vectors are for moving only x and y coordinates while poses have a heading(angle)
-            For example
-            a pose at coordinates (10,-10) facing 120 degrees would look like
-            Pose2d myPose = new Pose2d(10,-10, Math.toRadians(120));
-            Assuming you start at (0,0) at the start of the program, the robot with move to the coordinates labeled at an 120 degree heading
-         */
-        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlue)
-
-                .lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(325)))
-                .build();
-
-        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlue)
-
-                .lineToConstantHeading(new Vector2d(-35, 44))
-                .build();
-
-        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlue)
-
-                .lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
-                .build();
-
         // white pixel stacks (R,L, & M indicating starting point, all same end location):
 
         TrajectorySequence whiteStack = drive.trajectorySequenceBuilder(currentPose)
@@ -222,30 +235,9 @@ public class FarAutoBlue extends LinearOpMode {
                 .build();
         TrajectorySequence poseToCross = drive.trajectorySequenceBuilder(currentPose)
                 //.lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(33)))
-                .lineToLinearHeading(new Pose2d(-47.6, 2, Math.toRadians(0)))
+                .lineToConstantHeading(new Vector2d(-35, 2))
                 .addDisplacementMarker(() -> drive.followTrajectorySequenceAsync(crossMap))
                 .build();
-
-
-
-        // backboard locations:
-
-        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
-
-                .lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
-                .build();
-
-        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
-
-                .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
-                .build();
-
-        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
-
-                .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
-                .build();
-
-
 
         // parking spots:
 
