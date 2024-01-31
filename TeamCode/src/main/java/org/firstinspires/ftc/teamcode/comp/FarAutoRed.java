@@ -222,8 +222,9 @@ public class FarAutoRed extends LinearOpMode {
 
                 TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                        .lineToLinearHeading(new Pose2d(-39, -48, Math.toRadians(120)))
+                        .lineToLinearHeading(new Pose2d(-38, 46, Math.toRadians(310)))
                         .build();
+
                 TrajectorySequence leftTape2 = drive.trajectorySequenceBuilder(startPoseRed)
 
                         .lineToLinearHeading(new Pose2d(-35,-35, Math.toRadians(180)))
@@ -402,14 +403,6 @@ public class FarAutoRed extends LinearOpMode {
                         }
 
                         break;
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
                         
 
                     case BACKBOARD:

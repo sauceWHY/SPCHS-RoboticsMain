@@ -43,6 +43,7 @@ public class FarAutoBlue extends LinearOpMode {
         MIDDLE_TAPE,
         SLIDE_EXTENSION,
         RIGHT_CLAW_OPEN,
+        TRANSITION_POS,
         DELAY_START,
         LEFT_CLAW_OPEN,
         SLIDE_RETRACT,
@@ -87,7 +88,7 @@ public class FarAutoBlue extends LinearOpMode {
     private FarAutoBlue.State CurrentState;
     static boolean pressed = false;
 
-
+    Pose2d startPoseBlue = new Pose2d(-36.2, 61, Math.toRadians(270));
 
 
     @Override
@@ -112,6 +113,8 @@ public class FarAutoBlue extends LinearOpMode {
         leftClaw.setPosition(0.17);
         // Touch Sensor
         touch = hardwareMap.get(TouchSensor.class, "touch");
+
+        drive.setPoseEstimate(startPoseBlue);
 
         Subsystems.init();
 
@@ -217,15 +220,13 @@ public class FarAutoBlue extends LinearOpMode {
                 }
 
 
-                Pose2d startPoseBlue = new Pose2d(-36.2, 61, Math.toRadians(270));
 
-                drive.setPoseEstimate(startPoseBlue);
 
                 // tapes...
 
                 TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlue)
 
-                        .lineToLinearHeading(new Pose2d(-39, 48, Math.toRadians(297)))
+                        .lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(325)))
                         .build();
 
                 TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlue)
@@ -247,8 +248,12 @@ public class FarAutoBlue extends LinearOpMode {
                 // transition moves (to get to position before crossing mid):
 
                 TrajectorySequence poseToCross = drive.trajectorySequenceBuilder(currentPose)
-                        .lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(33)))
-                        .turn(Math.toRadians(-33))
+                        //.lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(33)))
+                        .lineToLinearHeading(new Pose2d(-47.6, 2, Math.toRadians(0)))
+                        .build();
+
+                TrajectorySequence crossMap = drive.trajectorySequenceBuilder(currentPose)
+                        .lineToConstantHeading(new Vector2d(47.6, 2))
                         .build();
 
                 // backboard locations:
@@ -259,10 +264,12 @@ public class FarAutoBlue extends LinearOpMode {
                         .build();
 
                 TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
+
                         .lineToLinearHeading(new Pose2d(45.5, 31.8, Math.toRadians(0)))
                         .build();
 
                 TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(rightTape.end())
+
                         .lineToLinearHeading(new Pose2d(45.5, 25.9, Math.toRadians(0)))
                         .build();
 
@@ -314,7 +321,7 @@ public class FarAutoBlue extends LinearOpMode {
 
                     case INITIAL:
 
-                        wrist.setPosition(1);
+                        wrist.setPosition(0.46);
                         rightClaw.setPosition(0.70);
                         leftClaw.setPosition(0.09);
                         state = FarAutoBlue.State.TAPE_CAMERA;
@@ -323,15 +330,17 @@ public class FarAutoBlue extends LinearOpMode {
                     case TAPE_CAMERA:
 
                         if (myPipeline.getRectArea() > 2000) {
-                            if (myPipeline.getRectMidpointX() > 240) {
+                            if (myPipeline.getRectMidpointX() < 270) {
 
                                 webcam.stopStreaming();
+                                drive.followTrajectorySequenceAsync(leftTape);
                                 StateTime.reset();
                                 state = FarAutoBlue.State.LEFT_TAPE;
 
-                            } else if (myPipeline.getRectMidpointX() > 0) {
+                            } else if (myPipeline.getRectMidpointX() > 275) {
 
                                 webcam.stopStreaming();
+                                drive.followTrajectorySequenceAsync(middleTape);
                                 StateTime.reset();
                                 state = FarAutoBlue.State.MIDDLE_TAPE;
 
@@ -339,6 +348,7 @@ public class FarAutoBlue extends LinearOpMode {
                         } else {
 
                             webcam.stopStreaming();
+                            drive.followTrajectorySequenceAsync(rightTape);
                             StateTime.reset();
                             state = FarAutoBlue.State.RIGHT_TAPE;
 
@@ -347,7 +357,6 @@ public class FarAutoBlue extends LinearOpMode {
                         break;
 
                     case LEFT_TAPE:
-                        drive.followTrajectorySequenceAsync(leftTape);
                         Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
                         if (!drive.isBusy()) {
@@ -361,7 +370,6 @@ public class FarAutoBlue extends LinearOpMode {
                         break;
 
                     case MIDDLE_TAPE:
-                        drive.followTrajectorySequenceAsync(middleTape);
                         Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
                         if (!drive.isBusy()) {
@@ -375,7 +383,6 @@ public class FarAutoBlue extends LinearOpMode {
                         break;
 
                     case RIGHT_TAPE:
-                        drive.followTrajectorySequenceAsync(rightTape);
                         Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
                         if (!drive.isBusy()) {
@@ -390,11 +397,9 @@ public class FarAutoBlue extends LinearOpMode {
 
                     case SLIDE_EXTENSION:
 
+                         Subsystems.slideExtension(SLIDE_EXTENDED);
 
-                        if (StateTime.time() > 1) {
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
-                        }
-                        if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_EXTENDED) <= 15) {
+                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
 
                             StateTime.reset();
                             state = FarAutoBlue.State.RIGHT_CLAW_OPEN;
@@ -410,24 +415,31 @@ public class FarAutoBlue extends LinearOpMode {
                         if (StateTime.time() > 0.5) {
 
                             StateTime.reset();
-                            state = FarAutoBlue.State.BACKBOARD;
+                            state = State.BACKBOARD;
 
                         }
 
                         break;
 
+
                     case BACKBOARD:
 
                         Subsystems.slideAngle(BACK_BOARD_ANGLE);
+                        Subsystems.slideExtension(SLIDE_START_POS);
+                        wrist.setPosition(0);
 
                         switch (board) {
                             case RIGHT:
                                 drive.followTrajectorySequenceAsync(backBoardRight);
                                 break;
                             case MIDDLE:
+                                drive.followTrajectorySequence(poseToCross);
+                                drive.followTrajectorySequence(crossMap);
                                 drive.followTrajectorySequenceAsync(backBoardLeft);
                                 break;
                             case LEFT:
+                                drive.followTrajectorySequenceAsync(poseToCross);
+                                drive.followTrajectorySequenceAsync(crossMap);
                                 drive.followTrajectorySequenceAsync(backBoardMiddle);
                                 break;
 
