@@ -48,20 +48,20 @@
         public final double ticks_per_rev = 537.6;
         static boolean pressed = false;
         private State CurrentState;
-        private static final int PIXEL_ARM_ANGLE = 3000;
+        private static final int PIXEL_ARM_ANGLE = 3125;
         private static final int BACK_BOARD_ANGLE = 1200;
         private static final int ARM_START_POSITION = 0;
         private static final int ARM_LOWER_BACKBOARD = 2000;
 
 
         private static final int ARM_RESTING = 2200;
-        private static final int SLIDE_EXTENDED = 1900;
+        private static final int SLIDE_EXTENDED = 1800;
         private static final int SLIDE_BACKBOARD = 1600;
 
         private static final int SLIDE_START_POS = 0;
-        private static final double LEFT_CLAW_OPEN = 0.6;
+        private static final double LEFT_CLAW_OPEN = 0.54;
         private static final double LEFT_CLAW_CLOSE = 0.17;
-        private static final double RIGHT_CLAW_OPEN = 0.3;
+        private static final double RIGHT_CLAW_OPEN = 0.2;
         private static final double RIGHT_CLAW_CLOSE = 0.6;
         private static final double WRIST_PIXEL_PICKUP = 0.43;
         private static final double WRIST_BACKBOARD = 0.55;
@@ -109,7 +109,6 @@
             rightClaw = hardwareMap.get(Servo.class, "rightClaw");
             drone = hardwareMap.get(Servo.class, "drone");
             drone.setPosition(0.2);
-            wrist.setPosition(0);
             rightClaw.setPosition(0.6);
             leftClaw.setPosition(0.17);
 
@@ -150,12 +149,11 @@
                     telemetry.addData("posrightClaw", rightClaw.getPosition());
                     telemetry.addData("posleftClaw", leftClaw.getPosition());
                     telemetry.addData("slidePower", slideExtension.getPower());
+                    telemetry.addData("Touch Sensor State", touch.isPressed());
                     telemetry.update();
 
                     if (touch.isPressed() && !pressed) {
 
-                        telemetry.addData("Touch Sensor", "Is Pressed");
-                        telemetry.update();
                         if (slideExtension.getPower() <= 0) {
                             slideExtension.setPower(0);
                         }
@@ -179,7 +177,7 @@
                             Subsystems.slideExtension(0);
 
                             if (slideExtension.getCurrentPosition() <= 60) {
-                                wrist.setPosition(WRIST_DOWN);
+                                wrist.setPosition(WRIST_UP);
                             }
 
                             if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
@@ -192,12 +190,6 @@
 
                                 StateTime.reset();
                                 state = State.PIXEL_PICKUP;
-
-                            }
-                            if (gamepad1.y && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
-
-                                StateTime.reset();
-                                state = State.HANG;
 
                             }
                             if (gamepad2.y && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
@@ -220,9 +212,6 @@
                             Subsystems.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
-                            if (gamepad1.left_trigger > 0.5) {
-                                Subsystems.slideAngle(ARM_LOWER_BACKBOARD);
-                            }
 
                             if (gamepad1.left_bumper) {
 
@@ -327,7 +316,6 @@
 
                         case HANG:
 
-                            Subsystems.hangingArm(3900);
                             if (gamepad1.y) {
                                 Subsystems.hangingArm(3900);
                             }
@@ -336,7 +324,7 @@
                             if (gamepad1.x) {
 
                                 StateTime.reset();
-                                state = State.BACKBOARD;
+                                state = State.UNDER_BAR;
 
                             }
 
@@ -361,7 +349,12 @@
                             Subsystems.slideAngle(ARM_RESTING);
                             Subsystems.slideExtension(0);
                             wrist.setPosition(WRIST_DOWN);
+                            if (gamepad1.y) {
 
+                                StateTime.reset();
+                                state = State.HANG;
+
+                            }
                             if (gamepad1.x) {
 
                                 StateTime.reset();

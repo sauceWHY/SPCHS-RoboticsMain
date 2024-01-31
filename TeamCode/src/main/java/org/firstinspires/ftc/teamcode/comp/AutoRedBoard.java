@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.comp;
 
+import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
+import static org.firstinspires.ftc.teamcode.Robot.*;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -7,18 +10,18 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import static org.firstinspires.ftc.teamcode.RobotHardware.*;
 
 
 import android.annotation.SuppressLint;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -45,13 +48,19 @@ public class AutoRedBoard extends LinearOpMode {
         DELAY_START,
         LEFT_CLAW_OPEN,
         SLIDE_RETRACT,
+        PIXELSTACK,
+        PIXELSTACKGRAB,
+        BACKTOBACKBOARD,
+        DONE,
 
     }
-    public enum Board {
+
+    private enum Board {
         LEFT,
         MIDDLE,
         RIGHT
     }
+
 
     public static Scalar scalarLowerYCrCb = new Scalar(0.0, 188.0, 60.0);
     public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 100.0);
@@ -59,7 +68,7 @@ public class AutoRedBoard extends LinearOpMode {
     public final ElapsedTime runtime = new ElapsedTime();
     private final ElapsedTime StateTime = new ElapsedTime();
     ElapsedTime delayTimer = new ElapsedTime();
-    boolean delayStart = true; // Default: no delay
+    boolean delayStart = false; // Default: no delay
     double selectedDelayTime = 5.0; // Default delay time in seconds
     private boolean leftPark = false; // Default: right park
 
@@ -75,21 +84,67 @@ public class AutoRedBoard extends LinearOpMode {
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
-    private static final int PIXEL_ARM_ANGLE = 1700;
-    private static final int BACK_BOARD_ANGLE = 0;
-    private static final int SLIDE_EXTENDED = 4400;
-    private static final int SLIDE_START_POS = 50;
-    private State CurrentState;
+    private static final int PIXEL_ARM_ANGLE = 3125;
+    private static final int BACK_BOARD_ANGLE = 2400;
+    private static final int ARM_RESTING_POSITION = 0;
+    private static final int ARM_UNDER_BAR = 2200;
+    private static final int SLIDE_EXTENDED = 1800;
+    private static final int SLIDE_START_POS = 0;
+    private static final int SLIDE_BACKBOARD = 1100;
+    private static final int SLIDE_LEFT_TAPE = 1200;
+    private static final int PIXEL_STACK_ANGLE = 3000;
+    private static final int PIXEL_STACK_EXTENSION = 1300;
+    private static final double LEFT_CLAW_OPEN = 0.54;
+    private static final double LEFT_CLAW_CLOSE = 0.17;
+    private static final double RIGHT_CLAW_OPEN = 0.2;
+    private static final double RIGHT_CLAW_CLOSE = 0.6;
+    private static final double WRIST_PIXEL_PICKUP = 0.46;
+    private static final double WRIST_BACKBOARD = 0.73;
+    private static final double WRIST_DOWN = 0;
+    private static final double WRIST_UP = 1;
+    private static final double WRIST_LEFT_TAPE = 0.5;
 
-    @SuppressLint("DefaultLocale")
+    static boolean pressed = false;
+    protected SampleMecanumDrive drive;
+    Pose2d startPoseRedBB = new Pose2d(16, 61, Math.toRadians(90));
+
+
+
+
+
     @Override
     public void runOpMode() throws InterruptedException {
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
 
-        initializeHardware();
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        leftRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        // Slide Motors
+        slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
+        slideExtension.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        slidePivot = hardwareMap.get(DcMotorEx.class, "slidePivot");
+        slidePivot.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slidePivot.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        // Servos
+        wrist = hardwareMap.get(Servo.class, "wrist");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+        leftClaw.setPosition(LEFT_CLAW_CLOSE);
+        // Touch Sensor
+        touch = hardwareMap.get(TouchSensor.class, "touch");
 
         Subsystems.init();
+
+        drive.setPoseEstimate(startPoseRedBB);
 
         // OpenCV webcam
 
@@ -106,7 +161,7 @@ public class AutoRedBoard extends LinearOpMode {
             @Override
             public void onOpened() {
 
-                webcam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN);
+                webcam.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
 
             }
 
@@ -125,27 +180,88 @@ public class AutoRedBoard extends LinearOpMode {
         FtcDashboard.getInstance().startCameraStream(webcam, 30);
         telemetry.update();
 
-        if (gamepad1.a) {
-            delayStart = !delayStart;
-        }
 
         // Allow the user to select the delay time using the controller
-        if (delayStart) {
-            if (gamepad1.dpad_up) {
-                selectedDelayTime += 1.0;
-            } else if (gamepad1.dpad_down && selectedDelayTime > 1.0) {
-                selectedDelayTime -= 1.0;
+
+
+
+        while (!opModeIsActive()) {
+            telemetry.addData("Delay Start", delayStart ? "Yes" : "No");
+            telemetry.addData("Selected Delay Time", "%.1f seconds", selectedDelayTime);
+            telemetry.addData("Press B to toggle park side", "Current: " + (leftPark ? "Left" : "Right"));
+            telemetry.update();
+            // Allow the user to select the delay time using the controller
+            if (gamepad1.a) {
+                delayStart = !delayStart;
+            }
+            if (delayStart) {
+                if (gamepad1.right_bumper) {
+                    selectedDelayTime += 1.0;
+                } else if (gamepad1.left_bumper && selectedDelayTime > 1.0) {
+                    selectedDelayTime -= 1.0;
+                }
+            }
+            if (gamepad1.b) {
+                leftPark = !leftPark;
             }
         }
-        if (gamepad1.b) {
-            leftPark = !leftPark;
-        }
 
-        telemetry.addData("Delay Start", delayStart ? "Yes" : "No");
-        telemetry.addData("Selected Delay Time", "%.1f seconds", selectedDelayTime);
-        telemetry.addData("Press B to toggle park side", "Current: " + (leftPark ? "Left" : "Right"));
-        telemetry.update();
 
+
+        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+                .lineToLinearHeading(new Pose2d(31, -48, Math.toRadians(145)))
+                .build();
+
+        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+                .lineToLinearHeading(new Pose2d(28.3, -53.4, Math.toRadians(105)))
+                .build();
+
+        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+                .lineToConstantHeading(new Vector2d(29, -59))
+                .build();
+
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, -25.9, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, -31.8, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, -36.1, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
+
+                .lineToLinearHeading(new Pose2d(51, -60, Math.toRadians(180)))
+                .build();
+
+        TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
+
+                .lineToLinearHeading(new Pose2d(51, -8, Math.toRadians(180)))
+                .build();
+
+        TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
+
+                .back(10)
+                .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
+
+                .build();
+        TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
+
+                .back(67)
+                .turn(Math.toRadians(180))
+                .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
+
+                .build();
 
         waitForStart();
 
@@ -154,117 +270,75 @@ public class AutoRedBoard extends LinearOpMode {
             runtime.reset();
             StateTime.reset();
             delayTimer.reset();
-            State state = State.DELAY_START;
             Board board = Board.LEFT;
+            State state;
+            if (delayStart) {
+                state = State.DELAY_START;
+            } else {
+                state = State.INITIAL;
+            }
 
 
             while (opModeIsActive() && !isStopRequested()) {
-                telemetry.addData("CurrentState", CurrentState.toString());
+
+                telemetry.addData("CurrentState", state.toString());
+                telemetry.addData("CurrentBoard", board.toString());
                 telemetry.addData("Status", "Run Time: " + runtime);
-                telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
-                telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
-                telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
+                telemetry.addData("posslide", slideExtension.getCurrentPosition());
+                telemetry.addData("posarmPivot", slidePivot.getCurrentPosition());
+                telemetry.addData("x", drive.getPoseEstimate().getX());
+                telemetry.addData("y", drive.getPoseEstimate().getY());
+                telemetry.addData("heading", drive.getPoseEstimate().getHeading());
+                telemetry.addData("drive", drive.isBusy());
                 telemetry.update();
 
+                if (touch.isPressed() && !pressed) {
 
-                Pose2d startPoseRedBB = new Pose2d(16, -61, Math.toRadians(90));
+                    telemetry.addData("Touch Sensor", "Is Pressed");
+                    telemetry.update();
+                    if (slideExtension.getPower() <= 0) {
+                        slideExtension.setPower(0);
+                    }
+                    slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                    pressed = true;
 
-                drive.setPoseEstimate(startPoseRedBB);
-
-
-                TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRedBB)
-
-                        .lineToLinearHeading(new Pose2d(34, -43, Math.toRadians(157)))
-
-                        .build();
-
-                TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRedBB)
-
-                        .lineToLinearHeading(new Pose2d(27, 57, Math.toRadians(255)))
-                        .build();
-
-                TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRedBB)
-
-                        .lineToConstantHeading(new Vector2d(26.3, -55))
-                        .build();
-
-                TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
-
-                        .lineToLinearHeading(new Pose2d(45.5, -25.9, Math.toRadians(0)))
-                        .build();
-
-                TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
-
-                        .lineToLinearHeading(new Pose2d(45.5, -31.8, Math.toRadians(0)))
-                        .build();
-
-                TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
-
-                        .lineToLinearHeading(new Pose2d(45.5, -39.1, Math.toRadians(0)))
-                        .build();
-
-                TrajectorySequence BBLparkRight = drive.trajectorySequenceBuilder(backBoardLeft.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -60))
-                        .build();
-
-                TrajectorySequence BBMparkRight = drive.trajectorySequenceBuilder(backBoardMiddle.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -60))
-                        .build();
-
-                TrajectorySequence BBRparkRight = drive.trajectorySequenceBuilder(backBoardRight.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -60))
-                        .build();
-
-                TrajectorySequence BBLparkLeft = drive.trajectorySequenceBuilder(backBoardLeft.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -5))
-                        .build();
-
-                TrajectorySequence BBMparkLeft = drive.trajectorySequenceBuilder(backBoardMiddle.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -5))
-                        .build();
-
-                TrajectorySequence BBRparkLeft = drive.trajectorySequenceBuilder(backBoardRight.end())
-
-                        .lineToConstantHeading(new Vector2d(45.5, -5))
-                        .build();
+                }
 
 
 
-                switch (CurrentState) {
+
+
+
+                switch (state) {
 
                     case DELAY_START:
 
                         if (delayStart && delayTimer.seconds() >= selectedDelayTime) {
-                            state = State.INITIAL;
-                        } else if (!delayStart) {
                             state = State.INITIAL;
                         }
                         break;
 
                     case INITIAL:
 
-                        Subsystems.syncedWrist(0);
-                        rightClaw.setPosition(0.70);
-                        leftClaw.setPosition(0.09);
+                        wrist.setPosition(WRIST_PIXEL_PICKUP);
+                        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                        leftClaw.setPosition(LEFT_CLAW_CLOSE);
                         state = State.TAPE_CAMERA;
                         break;
 
                     case TAPE_CAMERA:
 
                         if (myPipeline.getRectArea() > 2000) {
-                            if (myPipeline.getRectMidpointX() > 240) {
+                            if (myPipeline.getRectMidpointX() < 275) {
 
+                                drive.followTrajectorySequenceAsync(leftTape);
                                 webcam.stopStreaming();
                                 StateTime.reset();
                                 state = State.LEFT_TAPE;
 
-                            } else if (myPipeline.getRectMidpointX() > 0) {
+                            } else if (myPipeline.getRectMidpointX() > 275) {
 
+                                drive.followTrajectorySequenceAsync(middleTape);
                                 webcam.stopStreaming();
                                 StateTime.reset();
                                 state = State.MIDDLE_TAPE;
@@ -272,6 +346,7 @@ public class AutoRedBoard extends LinearOpMode {
                             }
                         } else {
 
+                            drive.followTrajectorySequenceAsync(rightTape);
                             webcam.stopStreaming();
                             StateTime.reset();
                             state = State.RIGHT_TAPE;
@@ -282,13 +357,19 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case LEFT_TAPE:
 
-                        drive.followTrajectorySequenceAsync(leftTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                        wrist.setPosition(WRIST_LEFT_TAPE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (StateTime.time() >= 1) {
+
+                            Subsystems.slideExtension(SLIDE_LEFT_TAPE);
+
+                        }
+
+                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1190) {
 
                             StateTime.reset();
-                            state= State.SLIDE_EXTENSION;
+                            state = State.RIGHT_CLAW_OPEN;
                             board = Board.LEFT;
 
                         }
@@ -297,13 +378,12 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case MIDDLE_TAPE:
 
-                        drive.followTrajectorySequenceAsync(middleTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy()) {
 
                             StateTime.reset();
-                            state= State.SLIDE_EXTENSION;
+                            state = State.SLIDE_EXTENSION;
                             board = Board.MIDDLE;
 
                         }
@@ -312,13 +392,12 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case RIGHT_TAPE:
 
-                        drive.followTrajectorySequenceAsync(rightTape);
-                        Subsystems.armPosition(PIXEL_ARM_ANGLE);
+                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
 
-                        if (!drive.isBusy() && Math.abs(armmotor.getCurrentPosition() - PIXEL_ARM_ANGLE) <= 20) {
+                        if (!drive.isBusy()) {
 
                             StateTime.reset();
-                            state= State.SLIDE_EXTENSION;
+                            state = State.SLIDE_EXTENSION;
                             board = Board.RIGHT;
 
                         }
@@ -327,11 +406,11 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case SLIDE_EXTENSION:
 
-                        Subsystems.slideRightPosition(SLIDE_EXTENDED);
+                        if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
+                            Subsystems.slideExtension(SLIDE_EXTENDED);
+                        }
+                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1890) {
 
-                        if (Math.abs(rightSlide.getCurrentPosition() - SLIDE_EXTENDED) <= 15) {
-
-                            rightClaw.setPosition(0.2);
                             StateTime.reset();
                             state = State.RIGHT_CLAW_OPEN;
 
@@ -340,6 +419,8 @@ public class AutoRedBoard extends LinearOpMode {
                         break;
 
                     case RIGHT_CLAW_OPEN:
+
+                        rightClaw.setPosition(RIGHT_CLAW_OPEN);
 
                         if (StateTime.time() > 0.5) {
 
@@ -352,24 +433,29 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case BACKBOARD:
 
-                        switch (board) {
-                            case RIGHT:
-                                drive.followTrajectorySequenceAsync(backBoardRight);
-                                break;
-                            case MIDDLE:
-                                drive.followTrajectorySequenceAsync(backBoardLeft);
-                                break;
-                            case LEFT:
-                                drive.followTrajectorySequenceAsync(backBoardLeft);
-                                break;
+                        Subsystems.slideAngle(BACK_BOARD_ANGLE);
+                        Subsystems.slideExtension(SLIDE_BACKBOARD);
+                        wrist.setPosition(WRIST_BACKBOARD);
+
+                        if (board == Board.LEFT){
+
+                            drive.followTrajectorySequence(backBoardLeft);
+
+                        }
+                        if (board == Board.MIDDLE){
+
+                            drive.followTrajectorySequence(backBoardMiddle);
+
+                        }
+                        if (board == Board.RIGHT){
+
+                            drive.followTrajectorySequence(backBoardRight);
 
                         }
 
-                        Subsystems.armPosition(BACK_BOARD_ANGLE);
 
                         if (!drive.isBusy()) {
 
-                            leftClaw.setPosition(0.5);
                             StateTime.reset();
                             state = State.LEFT_CLAW_OPEN;
 
@@ -379,9 +465,10 @@ public class AutoRedBoard extends LinearOpMode {
 
                     case LEFT_CLAW_OPEN:
 
-                        if (StateTime.time() > 0.5) {
 
-                            Subsystems.slideRightPosition(SLIDE_START_POS);
+                        if (StateTime.time() > 0.3) {
+
+                            leftClaw.setPosition(LEFT_CLAW_OPEN);
                             StateTime.reset();
                             state = State.SLIDE_RETRACT;
 
@@ -390,42 +477,103 @@ public class AutoRedBoard extends LinearOpMode {
                         break;
 
                     case SLIDE_RETRACT:
-                        if (Math.abs(rightSlide.getCurrentPosition() - SLIDE_START_POS) <= 20) {
 
-                            if (leftPark) {
-                                if (board == Board.LEFT) {
-                                    drive.followTrajectorySequenceAsync(BBLparkLeft);
-                                } else if (board == Board.MIDDLE) {
-                                    drive.followTrajectorySequenceAsync(BBMparkLeft);
-                                } else if (board == Board.RIGHT) {
-                                    drive.followTrajectorySequenceAsync(BBRparkLeft);
+                        if (StateTime.time() >= 0.3) {
+                            Subsystems.slideExtension(SLIDE_START_POS);
+                        }
+                        if (StateTime.time() >= 0.6) {
+
+                            StateTime.reset();
+                            state = State.PARK;
+
+                        }
+
+
+                        break;
+                    case PIXELSTACK:
+
+                        Subsystems.slideAngle(ARM_UNDER_BAR);
+
+                        if (!drive.isBusy()){
+
+                            Subsystems.slideAngle(PIXEL_STACK_ANGLE);
+
+                            if (StateTime.time() > 1) {
+                                Subsystems.slideExtension(PIXEL_STACK_EXTENSION);
+                                wrist.setPosition(WRIST_PIXEL_PICKUP);
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                StateTime.reset();
+                                state = State.PIXELSTACKGRAB;
+                            }
+
+                        }
+                        break;
+                    case PIXELSTACKGRAB:
+
+                        if (StateTime.time() >= 1){
+
+                            leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                            if (StateTime.time() > 1.5) {
+
+                                Subsystems.slideExtension(SLIDE_START_POS);
+                                if (StateTime.time() >= 2) {
+
+                                    Subsystems.slideAngle(ARM_UNDER_BAR);
+                                    wrist.setPosition(WRIST_DOWN);
+                                    drive.followTrajectorySequenceAsync(GoingBackThroughSide);
+                                    StateTime.reset();
+                                    state = State.BACKTOBACKBOARD;
+
                                 }
-                            } else {
-                                if (board == Board.LEFT) {
-                                    drive.followTrajectorySequenceAsync(BBLparkRight);
-                                } else if (board == Board.MIDDLE) {
-                                    drive.followTrajectorySequenceAsync(BBMparkRight);
-                                } else if (board == Board.RIGHT) {
-                                    drive.followTrajectorySequenceAsync(BBRparkRight);
-                                }
-
-                                state = State.PARK;
-
-                                break;
 
                             }
 
                         }
 
+
+
+                        break;
+                    case BACKTOBACKBOARD:
+
+
+                        if (!drive.isBusy()) {
+
+                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
+                            Subsystems.slideExtension(SLIDE_EXTENDED);
+                            wrist.setPosition(WRIST_BACKBOARD);
+                            if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_EXTENDED) <= 10) {
+
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                StateTime.reset();
+                                state = State.PARK;
+
+                            }
+
+                        }
+
+
                         break;
 
                     case PARK:
 
+                        Subsystems.slideExtension(SLIDE_START_POS);
+                        Subsystems.slideAngle(ARM_RESTING_POSITION);
+                        wrist.setPosition(WRIST_UP);
+                        if (leftPark) {
+                            drive.followTrajectorySequenceAsync(parkRight);
+                        } else {
+
+                            drive.followTrajectorySequenceAsync(parkLeft);
+
+                        }
+                        StateTime.reset();
+                        state = State.DONE;
+                        break;
+                    case DONE:
                         break;
 
                     default:
 
-                        state = State.INITIAL;
                         StateTime.reset();
                         runtime.reset();
 
@@ -433,10 +581,11 @@ public class AutoRedBoard extends LinearOpMode {
 
                 drive.update();
 
+                currentPose = drive.getPoseEstimate();
 
             }
         }
     }
-
 }
+
 

@@ -88,16 +88,16 @@
     private static final int BACK_BOARD_ANGLE = 2400;
     private static final int ARM_RESTING_POSITION = 0;
     private static final int ARM_UNDER_BAR = 2200;
-    private static final int SLIDE_EXTENDED = 1900;
+    private static final int SLIDE_EXTENDED = 1800;
     private static final int SLIDE_START_POS = 0;
-    private static final int SLIDE_BACKBOARD = 1050;
+    private static final int SLIDE_BACKBOARD = 1100;
     private static final int SLIDE_LEFT_TAPE = 1200;
     private static final int PIXEL_STACK_ANGLE = 3000;
     private static final int PIXEL_STACK_EXTENSION = 1300;
-    private static final double LEFT_CLAW_OPEN = 0.6;
-    private static final double LEFT_CLAW_CLOSE = 0.14;
-    private static final double RIGHT_CLAW_OPEN = 0.3;
-    private static final double RIGHT_CLAW_CLOSE = 0.7;
+    private static final double LEFT_CLAW_OPEN = 0.54;
+    private static final double LEFT_CLAW_CLOSE = 0.17;
+    private static final double RIGHT_CLAW_OPEN = 0.2;
+    private static final double RIGHT_CLAW_CLOSE = 0.6;
     private static final double WRIST_PIXEL_PICKUP = 0.46;
     private static final double WRIST_BACKBOARD = 0.73;
     private static final double WRIST_DOWN = 0;
@@ -200,11 +200,68 @@
                 } else if (gamepad1.left_bumper && selectedDelayTime > 1.0) {
                     selectedDelayTime -= 1.0;
                 }
-                if (gamepad1.b) {
-                    leftPark = !leftPark;
-                }
+            }
+            if (gamepad1.b) {
+                leftPark = !leftPark;
             }
         }
+
+
+
+        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+                .lineToConstantHeading(new Vector2d(29, 59))
+                .build();
+
+        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+                .lineToLinearHeading(new Pose2d(28.3, 53.4, Math.toRadians(260)))
+                .build();
+
+        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
+
+                .lineToLinearHeading(new Pose2d(31, 48, Math.toRadians(215)))
+                .build();
+
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
+                .build();
+
+        TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
+
+                .lineToLinearHeading(new Pose2d(51, 8, Math.toRadians(180)))
+                .build();
+
+        TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
+
+                .lineToLinearHeading(new Pose2d(51, 60, Math.toRadians(180)))
+                .build();
+
+        TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
+
+                .back(10)
+                .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
+
+                .build();
+        TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
+
+                .back(67)
+                .turn(Math.toRadians(180))
+                .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
+
+                .build();
 
             waitForStart();
 
@@ -234,6 +291,7 @@
                     telemetry.addData("heading", drive.getPoseEstimate().getHeading());
                     telemetry.addData("drive", drive.isBusy());
                     telemetry.update();
+
                     if (touch.isPressed() && !pressed) {
 
                         telemetry.addData("Touch Sensor", "Is Pressed");
@@ -249,62 +307,6 @@
 
 
 
-
-
-                    TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
-
-                            .lineToConstantHeading(new Vector2d(29, 59))
-                            .build();
-
-                    TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
-
-                            .lineToLinearHeading(new Pose2d(28.3, 53.4, Math.toRadians(260)))
-                            .build();
-
-                    TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
-
-                            .lineToLinearHeading(new Pose2d(30, 48, Math.toRadians(217)))
-                            .build();
-
-                    TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
-
-                            .lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
-                            .build();
-
-                    TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
-
-                            .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
-                            .build();
-
-                    TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
-
-                            .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
-                            .build();
-
-                    TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
-
-                            .lineToConstantHeading(new Vector2d(51, 8))
-                            .build();
-
-                    TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
-
-                            .lineToConstantHeading(new Vector2d(51, 60))
-                            .build();
-
-                    TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
-
-                            .back(10)
-                            .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
-                            .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
-
-                            .build();
-                    TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
-
-                            .back(67)
-                            .turn(Math.toRadians(180))
-                            .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
-
-                            .build();
 
 
                     switch (state) {
@@ -327,7 +329,7 @@
                         case TAPE_CAMERA:
 
                             if (myPipeline.getRectArea() > 2000) {
-                                if (myPipeline.getRectMidpointX() < 270) {
+                                if (myPipeline.getRectMidpointX() < 275) {
 
                                     drive.followTrajectorySequenceAsync(leftTape);
                                     webcam.stopStreaming();
@@ -358,7 +360,7 @@
                             Subsystems.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_LEFT_TAPE);
 
-                            if (StateTime.time() >= 0.5) {
+                            if (StateTime.time() >= 1) {
 
                                 Subsystems.slideExtension(SLIDE_LEFT_TAPE);
 
@@ -367,7 +369,7 @@
                             if (Math.abs(slideExtension.getCurrentPosition()) >= 1190) {
 
                                 StateTime.reset();
-                                state = State.SLIDE_EXTENSION;
+                                state = State.RIGHT_CLAW_OPEN;
                                 board = Board.LEFT;
 
                             }
@@ -391,7 +393,6 @@
                         case RIGHT_TAPE:
 
                             Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
 
                             if (!drive.isBusy()) {
 
@@ -405,8 +406,9 @@
 
                         case SLIDE_EXTENSION:
 
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
-
+                            if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
+                                Subsystems.slideExtension(SLIDE_EXTENDED);
+                            }
                             if (Math.abs(slideExtension.getCurrentPosition()) >= 1890) {
 
                                 StateTime.reset();
@@ -479,11 +481,11 @@
                             if (StateTime.time() >= 0.3) {
                                 Subsystems.slideExtension(SLIDE_START_POS);
                             }
-                            if (StateTime.time() >= 0.8) {
-                                //wrist.setPosition(WRIST_DOWN);
-                                drive.followTrajectorySequenceAsync(GoingThroughSide);
+                            if (StateTime.time() >= 0.6) {
+
                                 StateTime.reset();
                                 state = State.PARK;
+
                             }
 
 
@@ -557,11 +559,15 @@
                             Subsystems.slideExtension(SLIDE_START_POS);
                             Subsystems.slideAngle(ARM_RESTING_POSITION);
                             wrist.setPosition(WRIST_UP);
-                            if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 50) {
+                            if (leftPark) {
                                 drive.followTrajectorySequenceAsync(parkRight);
-                                StateTime.reset();
-                                state = State.DONE;
+                            } else {
+
+                                drive.followTrajectorySequenceAsync(parkLeft);
+
                             }
+                            StateTime.reset();
+                            state = State.DONE;
                             break;
                         case DONE:
                             break;
