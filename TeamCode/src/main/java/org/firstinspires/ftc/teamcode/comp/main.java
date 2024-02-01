@@ -34,31 +34,30 @@
         private enum State {
             INITIAL,
             PIXEL_PICKUP,
-            SLIDE_EXTENDED,
             BACKBOARD,
             HANG,
             DRONE,
-            UNDER_BAR, DONE
+            UNDER_BAR,
+            LOWER_BACKBOARD
         }
         public final ElapsedTime runtime = new ElapsedTime();
         private final ElapsedTime StateTime = new ElapsedTime();
         public static PIDController controller;
-        public static double p = 0.003, i = 0, d = 0.00015;
+        public static double p = 1, i = 0, d = 0.00015;
         public static double f = 0.08;
         public final double ticks_per_rev = 537.6;
         static boolean pressed = false;
-        private State CurrentState;
+        static boolean leftClawPressed = false;
+        static boolean rightClawPressed = false;
         private static final int PIXEL_ARM_ANGLE = 3125;
         private static final int BACK_BOARD_ANGLE = 1200;
         private static final int ARM_START_POSITION = 0;
-        private static final int ARM_LOWER_BACKBOARD = 2000;
-
-
+        private static final int ARM_LOWER_BACKBOARD = 2200;
         private static final int ARM_RESTING = 2200;
         private static final int SLIDE_EXTENDED = 1800;
         private static final int SLIDE_BACKBOARD = 1600;
 
-        private static final int SLIDE_START_POS = 0;
+        private static final int SLIDE_START_POS = 10;
         private static final double LEFT_CLAW_OPEN = 0.54;
         private static final double LEFT_CLAW_CLOSE = 0.17;
         private static final double RIGHT_CLAW_OPEN = 0.2;
@@ -76,6 +75,7 @@
         public void runOpMode() throws InterruptedException {
 
             drive = new SampleMecanumDrive(hardwareMap);
+
             // Drive Motors
             rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
             leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
@@ -135,58 +135,54 @@
             if (opModeIsActive()) {
 
                 runtime.reset();
-                State state = State.BACKBOARD;
+                State state = State.INITIAL;
                 StateTime.reset();
 
                 while (opModeIsActive()) {
-                    telemetry.addData("Status", "Run Time: " + runtime);
                     telemetry.addData("Status", "State Time: " + StateTime);
                     telemetry.addData("Status", "State: " + state);
                     telemetry.addData("posslide", slideExtension.getCurrentPosition());
                     telemetry.addData("poshangingMotor", hangingMotor.getCurrentPosition());
                     telemetry.addData("posslidePivot", slidePivot.getCurrentPosition());
                     telemetry.addData("posleftWrist", wrist.getPosition());
-                    telemetry.addData("posrightClaw", rightClaw.getPosition());
-                    telemetry.addData("posleftClaw", leftClaw.getPosition());
                     telemetry.addData("slidePower", slideExtension.getPower());
                     telemetry.addData("Touch Sensor State", touch.isPressed());
                     telemetry.update();
 
                     if (touch.isPressed() && !pressed) {
-
-                        if (slideExtension.getPower() <= 0) {
-                            slideExtension.setPower(0);
-                        }
                         slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                        slideExtension.setPower(0);
                         pressed = true;
-
+                    } else if (!touch.isPressed()) {
+                        // Reset 'pressed' when the touch sensor is released
+                        pressed = false;
                     }
                     if (gamepad1.right_trigger > 0.5 && gamepad1.left_trigger > 0.5) {
 
                         StateTime.reset();
-                        state = State.BACKBOARD;
+                        state = State.INITIAL;
 
                     }
 
                     switch (state) {
 
-                        case BACKBOARD:
+                        case INITIAL:
 
                             Subsystems.hangingArm(0);
                             Subsystems.slideAngle(0);
                             Subsystems.slideExtension(0);
 
                             if (slideExtension.getCurrentPosition() <= 60) {
-                                wrist.setPosition(WRIST_UP);
+                                wrist.setPosition(WRIST_DOWN);
                             }
 
                             if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
-                                state = State.SLIDE_EXTENDED;
+                                state = State.BACKBOARD;
 
                             }
-                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 20 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
+                            if (gamepad1.b && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
                                 state = State.PIXEL_PICKUP;
@@ -206,7 +202,7 @@
                             }
                             break;
 
-                        case SLIDE_EXTENDED:
+                        case BACKBOARD:
 
                             Subsystems.slideAngle(BACK_BOARD_ANGLE);
                             Subsystems.slideExtension(SLIDE_BACKBOARD);
@@ -219,18 +215,11 @@
                                 state = State.UNDER_BAR;
 
                             }
-                            if (gamepad1.dpad_up) {
 
-                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() - 100);
-                                slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-                                slideExtension.setPower(1);
-
-                            }
                             if (gamepad1.dpad_down) {
 
-                                slideExtension.setTargetPosition(slideExtension.getCurrentPosition() + 100);
-                                slideExtension.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-                                slideExtension.setPower(1);
+                               StateTime.reset();
+                               state = State.LOWER_BACKBOARD;
 
                             }
                             if (gamepad2.a) {
@@ -245,38 +234,58 @@
                                 leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
+                            if (gamepad1.left_trigger > 0.5) {
+
+                                StateTime.reset();
+                                state = State.LOWER_BACKBOARD;
+
+                            }
+
                             if (gamepad2.right_bumper) {
-
-                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
-
+                                if (!rightClawPressed) {
+                                    rightClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the right claw position when the bumper is pressed
+                                    if (rightClaw.getPosition() == RIGHT_CLAW_OPEN) {
+                                        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                                    } else {
+                                        rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                rightClawPressed = false; // Reset the flag when the bumper is released
                             }
+
+                            // Check the left bumper on gamepad2 to control the left claw
                             if (gamepad2.left_bumper) {
-
-                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
-
-                            }
-                            if (gamepad2.right_bumper) {
-
-                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
-
-                            }
-                            if (gamepad2.left_bumper) {
-
-                                leftClaw.setPosition(LEFT_CLAW_CLOSE);
-
+                                if (!leftClawPressed) {
+                                    leftClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the left claw position when the bumper is pressed
+                                    if (leftClaw.getPosition() == LEFT_CLAW_OPEN) {
+                                        leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                                    } else {
+                                        leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                leftClawPressed = false; // Reset the flag when the bumper is released
                             }
 
                             break;
 
+                        case LOWER_BACKBOARD:
 
-                        case PIXEL_PICKUP:
-
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-                            wrist.setPosition(WRIST_PIXEL_PICKUP);
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
+                            Subsystems.slideAngle(ARM_LOWER_BACKBOARD);
+                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            wrist.setPosition(WRIST_BACKBOARD);
 
 
-                            if (gamepad1.x) {
+                            if (gamepad1.left_bumper) {
+
+                                StateTime.reset();
+                                state = State.UNDER_BAR;
+
+                            }
+                            if (gamepad1.dpad_up) {
 
                                 StateTime.reset();
                                 state = State.BACKBOARD;
@@ -294,15 +303,91 @@
                                 leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
                             }
-                            if (gamepad2.right_bumper) {
 
-                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                            if (gamepad2.right_bumper) {
+                                if (!rightClawPressed) {
+                                    rightClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the right claw position when the bumper is pressed
+                                    if (rightClaw.getPosition() == RIGHT_CLAW_OPEN) {
+                                        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                                    } else {
+                                        rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                rightClawPressed = false; // Reset the flag when the bumper is released
+                            }
+
+                            // Check the left bumper on gamepad2 to control the left claw
+                            if (gamepad2.left_bumper) {
+                                if (!leftClawPressed) {
+                                    leftClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the left claw position when the bumper is pressed
+                                    if (leftClaw.getPosition() == LEFT_CLAW_OPEN) {
+                                        leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                                    } else {
+                                        leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                leftClawPressed = false; // Reset the flag when the bumper is released
+                            }
+
+                            break;
+
+
+                        case PIXEL_PICKUP:
+
+                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            wrist.setPosition(WRIST_PIXEL_PICKUP);
+                            Subsystems.slideExtension(SLIDE_EXTENDED);
+
+
+                            if (gamepad1.x) {
+
+                                StateTime.reset();
+                                state = State.INITIAL;
 
                             }
-                            if (gamepad2.left_bumper) {
+                            if (gamepad2.a) {
 
+                                rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
+
+                            }
+                            if (gamepad2.b) {
+
+                                rightClaw.setPosition(RIGHT_CLAW_CLOSE);
                                 leftClaw.setPosition(LEFT_CLAW_CLOSE);
 
+                            }
+                            if (gamepad2.right_bumper) {
+                                if (!rightClawPressed) {
+                                    rightClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the right claw position when the bumper is pressed
+                                    if (rightClaw.getPosition() == RIGHT_CLAW_OPEN) {
+                                        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                                    } else {
+                                        rightClaw.setPosition(RIGHT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                rightClawPressed = false; // Reset the flag when the bumper is released
+                            }
+
+                            // Check the left bumper on gamepad2 to control the left claw
+                            if (gamepad2.left_bumper) {
+                                if (!leftClawPressed) {
+                                    leftClawPressed = true; // Set the flag to true when the bumper is initially pressed
+                                    // Toggle the left claw position when the bumper is pressed
+                                    if (leftClaw.getPosition() == LEFT_CLAW_OPEN) {
+                                        leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                                    } else {
+                                        leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                    }
+                                }
+                            } else {
+                                leftClawPressed = false; // Reset the flag when the bumper is released
                             }
                             if (gamepad1.dpad_left) {
 
@@ -323,8 +408,8 @@
                             
                             if (gamepad1.x) {
 
-                                StateTime.reset();
-                                state = State.UNDER_BAR;
+                                Subsystems.hangingArm(200);
+                                wrist.setPosition(WRIST_UP);
 
                             }
 
@@ -332,13 +417,18 @@
 
                         case DRONE:
 
-                            Subsystems.hangingArm(2000);
-                            drone.setPosition(1);
+                            Subsystems.hangingArm(2500);
+
+                            if (Math.abs(hangingMotor.getCurrentPosition()) >= 2490) {
+
+                                drone.setPosition(1);
+
+                            }
 
                             if (StateTime.time() > 5) {
 
                                 StateTime.reset();
-                                state = State.BACKBOARD;
+                                state = State.INITIAL;
 
                             }
 
@@ -348,7 +438,8 @@
 
                             Subsystems.slideAngle(ARM_RESTING);
                             Subsystems.slideExtension(0);
-                            wrist.setPosition(WRIST_DOWN);
+                            Subsystems.hangingArm(0);
+                            wrist.setPosition(WRIST_PIXEL_PICKUP);
                             if (gamepad1.y) {
 
                                 StateTime.reset();
@@ -358,7 +449,7 @@
                             if (gamepad1.x) {
 
                                 StateTime.reset();
-                                state = State.BACKBOARD;
+                                state = State.INITIAL;
 
                             }
                             if (gamepad1.b) {
@@ -370,13 +461,9 @@
                             if (gamepad1.right_bumper) {
 
                                 StateTime.reset();
-                                state = State.SLIDE_EXTENDED;
+                                state = State.BACKBOARD;
 
                             }
-
-                            break;
-
-                        case DONE:
 
                             break;
 

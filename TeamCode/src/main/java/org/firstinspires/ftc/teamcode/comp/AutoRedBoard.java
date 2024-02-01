@@ -89,7 +89,7 @@ public class AutoRedBoard extends LinearOpMode {
     private static final int ARM_RESTING_POSITION = 0;
     private static final int ARM_UNDER_BAR = 2200;
     private static final int SLIDE_EXTENDED = 1800;
-    private static final int SLIDE_START_POS = 0;
+    private static final int SLIDE_START_POS = 10;
     private static final int SLIDE_BACKBOARD = 1100;
     private static final int SLIDE_LEFT_TAPE = 1200;
     private static final int PIXEL_STACK_ANGLE = 3000;
@@ -106,7 +106,7 @@ public class AutoRedBoard extends LinearOpMode {
 
     static boolean pressed = false;
     protected SampleMecanumDrive drive;
-    Pose2d startPoseRedBB = new Pose2d(16, 61, Math.toRadians(90));
+    Pose2d startPoseRedBB = new Pose2d(16, -61, Math.toRadians(90));
 
 
 
@@ -197,8 +197,10 @@ public class AutoRedBoard extends LinearOpMode {
             if (delayStart) {
                 if (gamepad1.right_bumper) {
                     selectedDelayTime += 1.0;
+                    sleep(200); // Add a small delay to prevent rapid decrements
                 } else if (gamepad1.left_bumper && selectedDelayTime > 1.0) {
                     selectedDelayTime -= 1.0;
+                    sleep(200); // Add a small delay to prevent rapid decrements
                 }
             }
             if (gamepad1.b) {
@@ -210,58 +212,35 @@ public class AutoRedBoard extends LinearOpMode {
 
         TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRedBB)
 
-                .lineToLinearHeading(new Pose2d(31, -48, Math.toRadians(145)))
+                .lineToLinearHeading(new Pose2d(25, -48, Math.toRadians(150)))
                 .build();
 
         TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRedBB)
 
-                .lineToLinearHeading(new Pose2d(28.3, -53.4, Math.toRadians(105)))
+                .lineToLinearHeading(new Pose2d(26, -49.4, Math.toRadians(105)))
                 .build();
 
         TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRedBB)
 
-                .lineToConstantHeading(new Vector2d(29, -59))
+                .lineToConstantHeading(new Vector2d(29.7, -59))
                 .build();
 
-        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(leftTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, -25.9, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(49.4, -29.9, Math.toRadians(0)))
                 .build();
 
         TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, -31.8, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(49.4, -36.8, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(rightTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, -36.1, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(49.4, -44.1, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
 
-                .lineToLinearHeading(new Pose2d(51, -60, Math.toRadians(180)))
-                .build();
-
-        TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToLinearHeading(new Pose2d(51, -8, Math.toRadians(180)))
-                .build();
-
-        TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
-
-                .back(10)
-                .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
-
-                .build();
-        TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
-
-                .back(67)
-                .turn(Math.toRadians(180))
-                .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
-
-                .build();
 
         waitForStart();
 
@@ -304,9 +283,30 @@ public class AutoRedBoard extends LinearOpMode {
 
                 }
 
+                TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
 
+                        .lineToLinearHeading(new Pose2d(49.4, -60, Math.toRadians(180)))
+                        .build();
 
+                TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
 
+                        .lineToLinearHeading(new Pose2d(49.4, -8, Math.toRadians(180)))
+                        .build();
+
+                TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
+
+                        .back(10)
+                        .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
+                        .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
+
+                        .build();
+                TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
+
+                        .back(67)
+                        .turn(Math.toRadians(180))
+                        .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
+
+                        .build();
 
 
                 switch (state) {
@@ -409,7 +409,7 @@ public class AutoRedBoard extends LinearOpMode {
                         if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
                             Subsystems.slideExtension(SLIDE_EXTENDED);
                         }
-                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1890) {
+                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
 
                             StateTime.reset();
                             state = State.RIGHT_CLAW_OPEN;

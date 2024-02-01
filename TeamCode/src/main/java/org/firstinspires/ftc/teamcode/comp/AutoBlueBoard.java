@@ -81,7 +81,7 @@
 
     private OpenCvCamera webcam;
     public static PIDController controller;
-    public static double p = 0.003, i = 0, d = 0.00015;
+    public static double p = 1, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
     private static final int PIXEL_ARM_ANGLE = 3125;
@@ -89,7 +89,7 @@
     private static final int ARM_RESTING_POSITION = 0;
     private static final int ARM_UNDER_BAR = 2200;
     private static final int SLIDE_EXTENDED = 1800;
-    private static final int SLIDE_START_POS = 0;
+    private static final int SLIDE_START_POS = 10;
     private static final int SLIDE_BACKBOARD = 1100;
     private static final int SLIDE_LEFT_TAPE = 1200;
     private static final int PIXEL_STACK_ANGLE = 3000;
@@ -188,7 +188,7 @@
         while (!opModeIsActive()) {
             telemetry.addData("Delay Start", delayStart ? "Yes" : "No");
             telemetry.addData("Selected Delay Time", "%.1f seconds", selectedDelayTime);
-            telemetry.addData("Press B to toggle park side", "Current: " + (leftPark ? "Left" : "Right"));
+            telemetry.addData("Press B to toggle park side", "Current: " + (leftPark ? "Right" : "Left"));
             telemetry.update();
             // Allow the user to select the delay time using the controller
             if (gamepad1.a) {
@@ -197,15 +197,16 @@
             if (delayStart) {
                 if (gamepad1.right_bumper) {
                     selectedDelayTime += 1.0;
+                    sleep(200); // Add a small delay to prevent rapid decrements
                 } else if (gamepad1.left_bumper && selectedDelayTime > 1.0) {
                     selectedDelayTime -= 1.0;
+                    sleep(200); // Add a small delay to prevent rapid decrements
                 }
             }
             if (gamepad1.b) {
                 leftPark = !leftPark;
             }
         }
-
 
 
         TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
@@ -215,7 +216,7 @@
 
         TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                .lineToLinearHeading(new Pose2d(28.3, 53.4, Math.toRadians(260)))
+                .lineToLinearHeading(new Pose2d(28.3, 51.4, Math.toRadians(260)))
                 .build();
 
         TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
@@ -238,30 +239,6 @@
                 .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToLinearHeading(new Pose2d(51, 8, Math.toRadians(180)))
-                .build();
-
-        TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToLinearHeading(new Pose2d(51, 60, Math.toRadians(180)))
-                .build();
-
-        TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
-
-                .back(10)
-                .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
-
-                .build();
-        TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
-
-                .back(67)
-                .turn(Math.toRadians(180))
-                .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
-
-                .build();
 
             waitForStart();
 
@@ -304,9 +281,29 @@
 
                     }
 
+                    TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
 
+                            .lineToLinearHeading(new Pose2d(49.4, 8, Math.toRadians(180)))
+                            .build();
 
+                    TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
 
+                            .lineToLinearHeading(new Pose2d(49.4, 57, Math.toRadians(180)))
+                            .build();
+                    TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
+
+                            .back(10)
+                            .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
+                            .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
+
+                            .build();
+                    TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
+
+                            .back(67)
+                            .turn(Math.toRadians(180))
+                            .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
+
+                            .build();
 
 
                     switch (state) {
@@ -409,7 +406,7 @@
                             if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
                                 Subsystems.slideExtension(SLIDE_EXTENDED);
                             }
-                            if (Math.abs(slideExtension.getCurrentPosition()) >= 1890) {
+                            if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
 
                                 StateTime.reset();
                                 state = State.RIGHT_CLAW_OPEN;
@@ -569,6 +566,7 @@
                             StateTime.reset();
                             state = State.DONE;
                             break;
+
                         case DONE:
                             break;
 
