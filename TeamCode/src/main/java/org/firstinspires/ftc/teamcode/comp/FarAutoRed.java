@@ -81,7 +81,7 @@ public class FarAutoRed extends LinearOpMode {
     private static final int ARM_RESTING_POSITION = 0;
     private static final int ARM_UNDER_BAR = 2200;
     private static final int SLIDE_EXTENDED = 1800;
-    private static final int SLIDE_START_POS = 10;
+    private static final int SLIDE_START_POS = 0;
     private static final int SLIDE_BACKBOARD = 1050;
     private static final int SLIDE_RIGHT_TAPE = 1200;
     private static final int PIXEL_STACK_ANGLE = 3000;
@@ -206,7 +206,7 @@ public class FarAutoRed extends LinearOpMode {
 
         TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRed)
 
-                .lineToLinearHeading(new Pose2d(-47.6, -48, Math.toRadians(35)))
+                .lineToLinearHeading(new Pose2d(-46.5, -43.5, Math.toRadians(25)))
                 .build();
 
         // white pixel stacks (R,L, & M indicating starting point, all same end location):
@@ -251,12 +251,12 @@ public class FarAutoRed extends LinearOpMode {
 
         TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
 
-                .lineToLinearHeading(new Pose2d(51, -60, Math.toRadians(180)))
+                .lineToConstantHeading(new Vector2d(49.4, -60))
                 .build();
 
         TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
 
-                .lineToLinearHeading(new Pose2d(51, -8, Math.toRadians(180)))
+                .lineToConstantHeading(new Vector2d(51, -8))
                 .build();
 
         waitForStart();

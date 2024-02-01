@@ -15,10 +15,35 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(-36.2, 61, Math.toRadians(270)))
-                                .lineToLinearHeading(new Pose2d(-38, 46, Math.toRadians(310)))
-                                .lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(0)))
-                                .lineToConstantHeading(new Vector2d(45.5, 12))
-                                .lineToLinearHeading(new Pose2d(45.5, 39.1, Math.toRadians(0)))
+                                    //left:
+                                //.lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(325)))
+                                    //mid:
+                                .lineToLinearHeading(new Pose2d(-47.6, 50, Math.toRadians(285)))
+                                    //right:
+                                //.lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
+
+                                .waitSeconds(.5)
+
+                                    //crossings:
+                                .lineToLinearHeading(new Pose2d(-51, 2, Math.toRadians(0)))
+                                .lineToConstantHeading(new Vector2d(40, 2))
+
+                                .waitSeconds(.5)
+
+                                    //BBL:
+                                //.lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
+                                    //BBM:
+                                .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
+                                    //BBR:
+                                //.lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
+
+                                .waitSeconds(.5)
+
+                                    //ParkRight:
+                                //.lineToConstantHeading(new Vector2d(51, 8))
+                                    //ParkLeft:
+                                .lineToConstantHeading(new Vector2d(51, 60))
+
                                 .build()
                 );
 
