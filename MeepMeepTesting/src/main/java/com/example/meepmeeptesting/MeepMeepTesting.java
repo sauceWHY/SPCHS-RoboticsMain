@@ -14,40 +14,42 @@ public class MeepMeepTesting {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-36.2, -61, Math.toRadians(90)))
-                                    //right:
-                                //.lineToLinearHeading(new Pose2d(-47.6, -48, Math.toRadians(45)))
-                                    //mid:
-                                //.lineToLinearHeading(new Pose2d(-47.6, -50, Math.toRadians(75)))
+                        drive.trajectorySequenceBuilder(new Pose2d(-36.2, 61, Math.toRadians(270)))
                                     //left:
-                                .lineToLinearHeading(new Pose2d(-35.2, -55, Math.toRadians(130)))
+                                //.lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(-47.6, 47, Math.toRadians(320)))
+                                    //mid:
+                                //.lineToLinearHeading(new Pose2d(-47.6, 50, Math.toRadians(285)))
+                                    //right:
+                                //.lineToLinearHeading(new Pose2d(-35.2, 55, Math.toRadians(250)))
+
 
                                 .waitSeconds(.5)
 
                                 //positioning to cross
-                                //.lineToLinearHeading(new Pose2d(-49.5, -2, Math.toRadians(0)))
-                                .turn(Math.toRadians(-40))
-                                .lineToLinearHeading(new Pose2d(-36, -2, Math.toRadians(90)))
+                                .lineToLinearHeading(new Pose2d(-49.5, 4, Math.toRadians(0)))
+                                //.turn(Math.toRadians(20))
+                                //.lineToLinearHeading(new Pose2d(-35, 4, Math.toRadians(270)))
 
 
                                 //crossing
-                                .lineToConstantHeading(new Vector2d(40, -2))
+                                .lineToConstantHeading(new Vector2d(40, 4))
 
                                 .waitSeconds(.5)
 
-                                    //BBR:
-                                .lineToLinearHeading(new Pose2d(48, -41.5, Math.toRadians(0)))
-                                    //BBM:
-                                //.lineToLinearHeading(new Pose2d(48, -34.8, Math.toRadians(0)))
                                     //BBL:
-                                //.lineToLinearHeading(new Pose2d(48, -30.8, Math.toRadians(0)))
+                                //.lineToLinearHeading(new Pose2d(48, 40, Math.toRadians(0)))
+                                    //BBM:
+                                //.lineToLinearHeading(new Pose2d(48, 34.8, Math.toRadians(0)))
+                                    //BBR:
+                                .lineToLinearHeading(new Pose2d(48, 28, Math.toRadians(0)))
 
                                 .waitSeconds(.5)
 
                                     //ParkRight:
-                                //.lineToConstantHeading(new Vector2d(51, -8))
+                                //.lineToConstantHeading(new Vector2d(51, 8))
                                     //ParkLeft:
-                                .lineToConstantHeading(new Vector2d(48, -60))
+                                .lineToConstantHeading(new Vector2d(48, 60))
 
                                 .build()
                 );

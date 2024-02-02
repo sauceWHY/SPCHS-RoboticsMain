@@ -1,12 +1,20 @@
     package org.firstinspires.ftc.teamcode.comp;
 
     import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
-    import static org.firstinspires.ftc.teamcode.Robot.*;
+    import static org.firstinspires.ftc.teamcode.Robot.leftClaw;
+    import static org.firstinspires.ftc.teamcode.Robot.leftFront;
+    import static org.firstinspires.ftc.teamcode.Robot.leftRear;
+    import static org.firstinspires.ftc.teamcode.Robot.rightClaw;
+    import static org.firstinspires.ftc.teamcode.Robot.rightFront;
+    import static org.firstinspires.ftc.teamcode.Robot.rightRear;
+    import static org.firstinspires.ftc.teamcode.Robot.slideExtension;
+    import static org.firstinspires.ftc.teamcode.Robot.slidePivot;
+    import static org.firstinspires.ftc.teamcode.Robot.touch;
+    import static org.firstinspires.ftc.teamcode.Robot.wrist;
 
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
     import com.acmerobotics.roadrunner.geometry.Pose2d;
-    import com.acmerobotics.roadrunner.geometry.Vector2d;
     import com.arcrobotics.ftclib.controller.PIDController;
     import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -198,18 +206,18 @@
 
 
             TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlue)
+                    //.lineToLinearHeading(new Pose2d(-47.6, 47, Math.toRadians(320)))
 
-                    .lineToLinearHeading(new Pose2d(-47.6, 47, Math.toRadians(320)))
                     .build();
 
             TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlue)
+                    //.lineToConstantHeading(new Vector2d(-35, 44))
 
-                    .lineToConstantHeading(new Vector2d(-35, 44))
                     .build();
 
             TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlue)
-
-                    .lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
+                    //.lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
+                    .lineToLinearHeading(new Pose2d(-35.2, 55, Math.toRadians(250)))
                     .build();
 
 
@@ -254,12 +262,10 @@
                     }
 
                     TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
-
                             .lineToLinearHeading(new Pose2d(51, 8, Math.toRadians(180)))
                             .build();
 
                     TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
-
                             .lineToLinearHeading(new Pose2d(51, 58, Math.toRadians(180)))
                             .build();
 
@@ -274,22 +280,27 @@
                             //.lineToLinearHeading(new Pose2d(-52, 12, Math.toRadians(33)))
                             .lineToLinearHeading(new Pose2d(-47.6, 2, Math.toRadians(0)))
                             .build();
+
+                    TrajectorySequence poseToCrossTight = drive.trajectorySequenceBuilder(currentPose)
+                            .turn(Math.toRadians(20))
+                            .lineToLinearHeading(new Pose2d(-35, 4, Math.toRadians(270)))
+                            .build();
+
                     TrajectorySequence crossMap = drive.trajectorySequenceBuilder(poseToCross.end())
                             .lineToLinearHeading(new Pose2d(40, 2, Math.toRadians(0)))
                             .build();
-                    TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(currentPose)
 
+                    TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(currentPose)
+                            //.lineToLinearHeading(new Pose2d(48, 40, Math.toRadians(0)))
                             .lineToLinearHeading(new Pose2d(49.4, 38.1, Math.toRadians(0)))
                             .build();
 
                     TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(currentPose)
-
                             .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
                             .build();
 
                     TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(currentPose)
-
-                            .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
+                            .lineToLinearHeading(new Pose2d(48, 28, Math.toRadians(0)))
                             .build();
 
 
