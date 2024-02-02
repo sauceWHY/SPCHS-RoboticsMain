@@ -4,6 +4,7 @@
     import static org.firstinspires.ftc.teamcode.Robot.*;
 
     import com.acmerobotics.dashboard.FtcDashboard;
+    import com.acmerobotics.dashboard.config.Config;
     import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
     import com.acmerobotics.roadrunner.geometry.Vector2d;
     import com.arcrobotics.ftclib.controller.PIDController;
@@ -32,6 +33,7 @@
 
     import org.firstinspires.ftc.teamcode.Subsystems;
 
+    @Config
     @Autonomous(name = "AutoBlueBoard", group = "Competition")
     public class AutoBlueBoard extends LinearOpMode {
 

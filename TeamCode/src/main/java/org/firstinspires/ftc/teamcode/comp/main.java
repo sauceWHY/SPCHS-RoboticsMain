@@ -409,7 +409,7 @@
                             if (gamepad1.x) {
 
                                 Subsystems.hangingArm(200);
-                                wrist.setPosition(WRIST_UP);
+                                wrist.setPosition(WRIST_DOWN);
 
                             }
 
