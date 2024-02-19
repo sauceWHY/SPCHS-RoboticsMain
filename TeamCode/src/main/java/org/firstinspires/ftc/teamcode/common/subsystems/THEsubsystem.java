@@ -1,15 +1,14 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.common.subsystems;
 
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.teamcode.Robot.*;
+import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
-public class Subsystems extends SubsystemBase {
+public class THEsubsystem extends SubsystemBase {
     public static PIDController controller;
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;
