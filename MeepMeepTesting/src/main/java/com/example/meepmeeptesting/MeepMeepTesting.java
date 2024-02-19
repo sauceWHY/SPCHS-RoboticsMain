@@ -8,26 +8,49 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(800);
+        MeepMeep meepMeep = new MeepMeep(600);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(-36.2, 61, Math.toRadians(270)))
-                                .lineToLinearHeading(new Pose2d(-36.2,47, Math.toRadians(310)))
-                                .lineToLinearHeading(new Pose2d(-51, 33, Math.PI))
-                                .setReversed(true)
-                                .splineToSplineHeading(new Pose2d(-36,12, Math.toRadians(270)), Math.toRadians(0))
-                                .strafeLeft(60)
-                                .splineToLinearHeading(new Pose2d(48.5,41.5, Math.toRadians(0)), Math.toRadians(0))
-                                .waitSeconds(2.5)
-                                .splineToSplineHeading(new Pose2d(11, 35, Math.PI), Math.PI/1.04)
-                                .setReversed(false)
-                                .lineToLinearHeading(new Pose2d(-51,34.8, Math.PI))
+                                    //left:
+                                //.lineToLinearHeading(new Pose2d(-47.6, 48, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(-47.6, 47, Math.toRadians(320)))
+                                    //mid:
+                                //.lineToLinearHeading(new Pose2d(-47.6, 50, Math.toRadians(285)))
+                                    //right:
+                                //.lineToLinearHeading(new Pose2d(-35.2, 55, Math.toRadians(250)))
 
-                            //    .lineToConstantHeading(new Vector2d(49.5, 60))
-                            //    .lineToConstantHeading(new Vector2d(54, 60))
+
+                                .waitSeconds(.5)
+
+                                //positioning to cross
+                                .lineToLinearHeading(new Pose2d(-49.5, 4, Math.toRadians(0)))
+                                //.turn(Math.toRadians(20))
+                                //.lineToLinearHeading(new Pose2d(-35, 4, Math.toRadians(270)))
+
+
+                                //crossing
+                                .lineToConstantHeading(new Vector2d(40, 4))
+
+                                .waitSeconds(.5)
+
+                                    //BBL:
+                                //.lineToLinearHeading(new Pose2d(48, 40, Math.toRadians(0)))
+                                    //BBM:
+                                //.lineToLinearHeading(new Pose2d(48, 34.8, Math.toRadians(0)))
+                                    //BBR:
+                                .lineToLinearHeading(new Pose2d(48, 28, Math.toRadians(0)))
+
+                                .waitSeconds(.5)
+
+                                    //ParkRight:
+                                //.lineToConstantHeading(new Vector2d(51, 8))
+                                    //ParkLeft:
+                                .lineToConstantHeading(new Vector2d(48, 60))
+
                                 .build()
                 );
 

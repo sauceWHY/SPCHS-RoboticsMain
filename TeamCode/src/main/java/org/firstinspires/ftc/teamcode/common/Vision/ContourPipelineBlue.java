@@ -30,7 +30,7 @@ public class ContourPipelineBlue extends OpenCvPipeline {
 
     //BLUE ALLIANCE!
     public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 130);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 96.0, 255);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 140.0, 255);
 
     // Yellow, freight or ducks!
     //public static Scalar scalarLowerYCrCb = new Scalar(0.0, 100.0, 0.0);
