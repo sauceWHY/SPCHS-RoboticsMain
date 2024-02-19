@@ -8,7 +8,7 @@ public class RightClawSubsystem extends SubsystemBase {
 
     private final Servo rightClaw;
     private double closedClaw = 0.6;
-    private double openedClaw = 0.3;
+    private double openedClaw = 0.2;
 
     public RightClawSubsystem(final HardwareMap hMap, final String name) {
         rightClaw = hMap.get(Servo.class, name);

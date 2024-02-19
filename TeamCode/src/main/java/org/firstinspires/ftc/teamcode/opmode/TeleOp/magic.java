@@ -104,7 +104,7 @@ public class magic extends CommandOpMode {
                 telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
                 telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
                 telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
-                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                //telemetry.addData("Status", "Run Time: " + runtime.toString());
                 telemetry.addData("posleftWrist", leftWrist.getPosition());
                 telemetry.addData("posrightWrist", rightWrist.getPosition());
                 telemetry.update();

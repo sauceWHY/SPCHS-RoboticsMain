@@ -6,8 +6,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class WristSubsystem extends SubsystemBase {
     private final Servo wrist;
-    private double startPos = 0.46;
-    private double boardAngle = 0.73;
+    private double wristUp = 1;
+    private double wristDown = 0;
+    private double wristGround = 0.43;
+    private double boardAngle = 0.55;
 
     /*
     I've heard abt ways to get around having to make new instances every time
@@ -18,12 +20,17 @@ public class WristSubsystem extends SubsystemBase {
         wrist = hMap.get(Servo.class, name);
     }
     //could make a function that adjusts servo position relative to arm angle
-    public void setStartPos() {
-        wrist.setPosition(startPos);
+    public void setWristUp() {
+        wrist.setPosition(wristUp);
     }
-
+    public void setWristDown() {
+        wrist.setPosition(wristDown);
+    }
     public void setBoardAngle() {
         wrist.setPosition(boardAngle);
+    }
+    public void setWristGround() {
+        wrist.setPosition(wristGround);
     }
 
     @Override

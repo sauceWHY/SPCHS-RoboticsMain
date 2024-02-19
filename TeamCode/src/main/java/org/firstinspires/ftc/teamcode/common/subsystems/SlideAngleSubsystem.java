@@ -3,15 +3,14 @@ package org.firstinspires.ftc.teamcode.common.subsystems;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 public class SlideAngleSubsystem extends SubsystemBase {
 
     private final DcMotor slideAngle;
-    private final int boardAngle = 2400;
+    private final int boardAngle = 1200;
     private final int pixelArmAngle = 3125;
-    private final int armRestingPosition = 0;
-    private final int armUnderBar = 2200;
+    private final int armStartPos = 0;
+    private final int armRestingPos = 2200;
 
     public SlideAngleSubsystem(final HardwareMap hMap, final String name) {
         slideAngle = hMap.get(DcMotor.class, name);
@@ -23,10 +22,10 @@ public class SlideAngleSubsystem extends SubsystemBase {
     public void setPixelArmAngle() {
         slideAngle.setTargetPosition(pixelArmAngle);
     }
-    public void setArmRestingPosition() {
-        slideAngle.setTargetPosition(armRestingPosition);
+    public void setArmStartPos() {
+        slideAngle.setTargetPosition(armStartPos);
     }
-    public void setArmUnderBar() {
-        slideAngle.setTargetPosition(armUnderBar);
+    public void setArmRestingPos() {
+        slideAngle.setTargetPosition(armRestingPos);
     }
 }
