@@ -1,11 +1,9 @@
-    package org.firstinspires.ftc.teamcode.comp;
+    package org.firstinspires.ftc.teamcode.opMode.teleop;
 
 
-    import com.acmerobotics.roadrunner.geometry.Pose2d;
     import com.arcrobotics.ftclib.controller.PIDController;
     import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-    import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
     import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -14,18 +12,12 @@
     import com.qualcomm.robotcore.hardware.TouchSensor;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
-    import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-    import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-    import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-
     import java.lang.Math;
 
-    import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-    import org.firstinspires.ftc.teamcode.PoseStorage;
-    import org.firstinspires.ftc.teamcode.Subsystems;
+    import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
     import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-    import static org.firstinspires.ftc.teamcode.Robot.*;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
     @TeleOp(name = "main", group = "Competition")
@@ -121,7 +113,7 @@
                     RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
             imu.initialize(parameters);
             controller = new PIDController(p, i, d);
-            Subsystems.init();
+            THEsubsystem.init();
 
 
 
@@ -168,9 +160,9 @@
 
                         case INITIAL:
 
-                            Subsystems.hangingArm(0);
-                            Subsystems.slideAngle(0);
-                            Subsystems.slideExtension(0);
+                            THEsubsystem.hangingArm(0);
+                            THEsubsystem.slideAngle(0);
+                            THEsubsystem.slideExtension(0);
 
                             if (slideExtension.getCurrentPosition() <= 60) {
                                 wrist.setPosition(WRIST_DOWN);
@@ -204,8 +196,8 @@
 
                         case BACKBOARD:
 
-                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
 
@@ -274,8 +266,8 @@
 
                         case LOWER_BACKBOARD:
 
-                            Subsystems.slideAngle(ARM_LOWER_BACKBOARD);
-                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            THEsubsystem.slideAngle(ARM_LOWER_BACKBOARD);
+                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
 
@@ -338,9 +330,9 @@
 
                         case PIXEL_PICKUP:
 
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
+                            THEsubsystem.slideExtension(SLIDE_EXTENDED);
 
 
                             if (gamepad1.x) {
@@ -402,13 +394,13 @@
                         case HANG:
 
                             if (gamepad1.y) {
-                                Subsystems.hangingArm(3900);
+                                THEsubsystem.hangingArm(3900);
                             }
 
                             
                             if (gamepad1.x) {
 
-                                Subsystems.hangingArm(200);
+                                THEsubsystem.hangingArm(200);
                                 wrist.setPosition(WRIST_DOWN);
 
                             }
@@ -417,7 +409,7 @@
 
                         case DRONE:
 
-                            Subsystems.hangingArm(2500);
+                            THEsubsystem.hangingArm(2500);
 
                             if (Math.abs(hangingMotor.getCurrentPosition()) >= 2490) {
 
@@ -436,9 +428,9 @@
 
                         case UNDER_BAR:
 
-                            Subsystems.slideAngle(ARM_RESTING);
-                            Subsystems.slideExtension(0);
-                            Subsystems.hangingArm(0);
+                            THEsubsystem.slideAngle(ARM_RESTING);
+                            THEsubsystem.slideExtension(0);
+                            THEsubsystem.hangingArm(0);
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
                             if (gamepad1.y) {
 

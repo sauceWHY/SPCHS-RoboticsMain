@@ -1,32 +1,34 @@
-package org.firstinspires.ftc.teamcode.comp;
+package org.firstinspires.ftc.teamcode.opMode.auto;
 
-import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
-import static org.firstinspires.ftc.teamcode.Robot.*;
+import static org.firstinspires.ftc.teamcode.common.hardware.PoseStorage.currentPose;
+import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Subsystems;
-import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Autonomous(name = "FarAutoRed", group = "Competition")
-public class FarAutoRed extends LinearOpMode {
+import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
+
+@Autonomous(name = "AutoRedBoard", group = "Competition")
+public class AutoRedBoard extends LinearOpMode {
 
     private enum State {
         INITIAL,
@@ -38,10 +40,13 @@ public class FarAutoRed extends LinearOpMode {
         MIDDLE_TAPE,
         SLIDE_EXTENSION,
         RIGHT_CLAW_OPEN,
-        TRANSITION_POS,
         DELAY_START,
         LEFT_CLAW_OPEN,
-        SLIDE_RETRACT, GOING_TO_BACKBOARD, DONE,
+        SLIDE_RETRACT,
+        PIXELSTACK,
+        PIXELSTACKGRAB,
+        BACKTOBACKBOARD,
+        DONE,
 
     }
 
@@ -50,6 +55,7 @@ public class FarAutoRed extends LinearOpMode {
         MIDDLE,
         RIGHT
     }
+
 
     public static Scalar scalarLowerYCrCb = new Scalar(0.0, 188.0, 60.0);
     public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 100.0);
@@ -67,10 +73,7 @@ public class FarAutoRed extends LinearOpMode {
     public static double borderRightX = 0.0;   //fraction of pixels from the right of the cam to skip
     public static double borderTopY = 0.0;   //fraction of pixels from the top of the cam to skip
     public static double borderBottomY = 0.0;   //fraction of pixels from the bottom of the cam to skip
-    /*
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 180.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 96, 255);
-    */
+
     private OpenCvCamera webcam;
     public static PIDController controller;
     public static double p = 0.003, i = 0, d = 0.00015;
@@ -81,9 +84,9 @@ public class FarAutoRed extends LinearOpMode {
     private static final int ARM_RESTING_POSITION = 0;
     private static final int ARM_UNDER_BAR = 2200;
     private static final int SLIDE_EXTENDED = 1800;
-    private static final int SLIDE_START_POS = 0;
-    private static final int SLIDE_BACKBOARD = 1050;
-    private static final int SLIDE_RIGHT_TAPE = 1200;
+    private static final int SLIDE_START_POS = 10;
+    private static final int SLIDE_BACKBOARD = 1100;
+    private static final int SLIDE_LEFT_TAPE = 1200;
     private static final int PIXEL_STACK_ANGLE = 3000;
     private static final int PIXEL_STACK_EXTENSION = 1300;
     private static final double LEFT_CLAW_OPEN = 0.54;
@@ -95,11 +98,13 @@ public class FarAutoRed extends LinearOpMode {
     private static final double WRIST_DOWN = 0;
     private static final double WRIST_UP = 1;
     private static final double WRIST_LEFT_TAPE = 0.5;
+
     static boolean pressed = false;
-
     protected SampleMecanumDrive drive;
+    Pose2d startPoseRedBB = new Pose2d(16, -61, Math.toRadians(90));
 
-    Pose2d startPoseRed = new Pose2d(-36.2, -61, Math.toRadians(90));
+
+
 
 
     @Override
@@ -107,7 +112,14 @@ public class FarAutoRed extends LinearOpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
 
-
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        leftRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rightRear.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Slide Motors
         slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
         slideExtension.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -120,14 +132,14 @@ public class FarAutoRed extends LinearOpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
-        rightClaw.setPosition(0.6);
-        leftClaw.setPosition(0.17);
+        rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+        leftClaw.setPosition(LEFT_CLAW_CLOSE);
         // Touch Sensor
         touch = hardwareMap.get(TouchSensor.class, "touch");
 
-        drive.setPoseEstimate(startPoseRed);
+        THEsubsystem.init();
 
-        Subsystems.init();
+        drive.setPoseEstimate(startPoseRedBB);
 
         // OpenCV webcam
 
@@ -166,20 +178,6 @@ public class FarAutoRed extends LinearOpMode {
 
         // Allow the user to select the delay time using the controller
 
-        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRed)
-
-                .lineToConstantHeading(new Vector2d(-49.2, -59))
-                .build();
-
-        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRed)
-
-                .lineToLinearHeading(new Pose2d(-47.6, -50, Math.toRadians(75)))
-                .build();
-
-        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRed)
-
-                .lineToLinearHeading(new Pose2d(-47.6, -48, Math.toRadians(45)))
-                .build();
 
 
         while (!opModeIsActive()) {
@@ -192,79 +190,54 @@ public class FarAutoRed extends LinearOpMode {
                 delayStart = !delayStart;
             }
             if (delayStart) {
-                if (gamepad1.dpad_up) {
+                if (gamepad1.right_bumper) {
                     selectedDelayTime += 1.0;
-                } else if (gamepad1.dpad_down && selectedDelayTime > 1.0) {
+                    sleep(200); // Add a small delay to prevent rapid decrements
+                } else if (gamepad1.left_bumper && selectedDelayTime > 1.0) {
                     selectedDelayTime -= 1.0;
+                    sleep(200); // Add a small delay to prevent rapid decrements
                 }
-
             }
             if (gamepad1.b) {
                 leftPark = !leftPark;
             }
         }
 
-        /* Trajectories either consist of vectors or poses. Vectors are for moving only x and y coordinates while poses have a heading(angle)
-            For example
-            a pose at coordinates (10,-10) facing 120 degrees would look like
-            Pose2d myPose = new Pose2d(10,-10, Math.toRadians(120));
-            Assuming you start at (0,0) at the start of the program, the robot with move to the coordinates labeled at an 120 degree heading
-         */
 
 
-        // white pixel stacks (R,L, & M indicating starting point, all same end location):
+        TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseRedBB)
 
-        TrajectorySequence whiteStack = drive.trajectorySequenceBuilder(currentPose)
-                .lineToLinearHeading(new Pose2d(-51.5,-32, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(25, -48, Math.toRadians(150)))
                 .build();
 
-        // transition moves (to get to position before crossing mid):
+        TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseRedBB)
 
-        TrajectorySequence crossMap = drive.trajectorySequenceBuilder(currentPose)
-                .lineToLinearHeading(new Pose2d(40, -2, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(26, -49.4, Math.toRadians(105)))
                 .build();
 
-        TrajectorySequence poseToCross = drive.trajectorySequenceBuilder(currentPose)
-                .lineToLinearHeading(new Pose2d(-49.5, -2, Math.toRadians(0)))
+        TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseRedBB)
+
+                .lineToConstantHeading(new Vector2d(29.7, -59))
                 .build();
 
-        TrajectorySequence poseToCrossSqueeze = drive.trajectorySequenceBuilder(currentPose)
-                .turn(Math.toRadians(-40))
-                .lineToLinearHeading(new Pose2d(-36, -2, Math.toRadians(90)))
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(leftTape.end())
+
+                .lineToLinearHeading(new Pose2d(49.4, -29.9, Math.toRadians(0)))
                 .build();
 
+        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
 
-        //backboard shtuff:
-        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToLinearHeading(new Pose2d(48, -30.8, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(49.4, -36.8, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(currentPose)
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(rightTape.end())
 
-                .lineToLinearHeading(new Pose2d(48, -34.8, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(49.4, -44.1, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToLinearHeading(new Pose2d(48, -41.5, Math.toRadians(0)))
-                .build();
-
-        // parking spots:
-        TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToConstantHeading(new Vector2d(48, -60))
-                .build();
-
-        TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
-
-                .lineToConstantHeading(new Vector2d(51, -8))
-                .build();
 
 
         waitForStart();
-
-
 
         if (opModeIsActive()) {
 
@@ -279,7 +252,9 @@ public class FarAutoRed extends LinearOpMode {
                 state = State.INITIAL;
             }
 
+
             while (opModeIsActive() && !isStopRequested()) {
+
                 telemetry.addData("CurrentState", state.toString());
                 telemetry.addData("CurrentBoard", board.toString());
                 telemetry.addData("Status", "Run Time: " + runtime);
@@ -290,6 +265,7 @@ public class FarAutoRed extends LinearOpMode {
                 telemetry.addData("heading", drive.getPoseEstimate().getHeading());
                 telemetry.addData("drive", drive.isBusy());
                 telemetry.update();
+
                 if (touch.isPressed() && !pressed) {
 
                     telemetry.addData("Touch Sensor", "Is Pressed");
@@ -302,7 +278,30 @@ public class FarAutoRed extends LinearOpMode {
 
                 }
 
+                TrajectorySequence parkRight = drive.trajectorySequenceBuilder(currentPose)
 
+                        .lineToLinearHeading(new Pose2d(49.4, -60, Math.toRadians(180)))
+                        .build();
+
+                TrajectorySequence parkLeft = drive.trajectorySequenceBuilder(currentPose)
+
+                        .lineToLinearHeading(new Pose2d(49.4, -8, Math.toRadians(180)))
+                        .build();
+
+                TrajectorySequence GoingThroughSide = drive.trajectorySequenceBuilder(currentPose)
+
+                        .back(10)
+                        .lineToLinearHeading(new Pose2d(43, 32.8, Math.toRadians(180)))
+                        .lineToLinearHeading(new Pose2d(-30, 32.8, Math.toRadians(172)))
+
+                        .build();
+                TrajectorySequence GoingBackThroughSide = drive.trajectorySequenceBuilder(GoingThroughSide.end())
+
+                        .back(67)
+                        .turn(Math.toRadians(180))
+                        .lineToLinearHeading(new Pose2d(53, 35.8, Math.toRadians(0)))
+
+                        .build();
 
 
                 switch (state) {
@@ -310,8 +309,6 @@ public class FarAutoRed extends LinearOpMode {
                     case DELAY_START:
 
                         if (delayStart && delayTimer.seconds() >= selectedDelayTime) {
-                            state = State.INITIAL;
-                        } else if (!delayStart) {
                             state = State.INITIAL;
                         }
                         break;
@@ -355,12 +352,19 @@ public class FarAutoRed extends LinearOpMode {
 
                     case LEFT_TAPE:
 
-                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                        THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
+                        wrist.setPosition(WRIST_LEFT_TAPE);
 
-                        if (!drive.isBusy()) {
+                        if (StateTime.time() >= 1) {
+
+                            THEsubsystem.slideExtension(SLIDE_LEFT_TAPE);
+
+                        }
+
+                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1190) {
 
                             StateTime.reset();
-                            state = State.SLIDE_EXTENSION;
+                            state = State.RIGHT_CLAW_OPEN;
                             board = Board.LEFT;
 
                         }
@@ -368,7 +372,8 @@ public class FarAutoRed extends LinearOpMode {
                         break;
 
                     case MIDDLE_TAPE:
-                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+
+                        THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
                         if (!drive.isBusy()) {
 
@@ -381,19 +386,13 @@ public class FarAutoRed extends LinearOpMode {
                         break;
 
                     case RIGHT_TAPE:
-                        Subsystems.slideAngle(PIXEL_ARM_ANGLE);
-                        wrist.setPosition(WRIST_LEFT_TAPE);
 
-                        if (StateTime.time() >= 1) {
+                        THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
-                            Subsystems.slideExtension(SLIDE_RIGHT_TAPE);
-
-                        }
-
-                        if (Math.abs(slideExtension.getCurrentPosition()) >= 1190) {
+                        if (!drive.isBusy()) {
 
                             StateTime.reset();
-                            state = State.RIGHT_CLAW_OPEN;
+                            state = State.SLIDE_EXTENSION;
                             board = Board.RIGHT;
 
                         }
@@ -403,9 +402,8 @@ public class FarAutoRed extends LinearOpMode {
                     case SLIDE_EXTENSION:
 
                         if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
-                            Subsystems.slideExtension(SLIDE_EXTENDED);
+                            THEsubsystem.slideExtension(SLIDE_EXTENDED);
                         }
-
                         if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
 
                             StateTime.reset();
@@ -421,29 +419,6 @@ public class FarAutoRed extends LinearOpMode {
 
                         if (StateTime.time() > 0.5) {
 
-                            Subsystems.slideExtension(SLIDE_START_POS);
-                            if (board == Board.LEFT) {
-                                drive.followTrajectorySequenceAsync(poseToCrossSqueeze);
-                            } else {
-                                drive.followTrajectorySequenceAsync(poseToCross);
-                            }
-                            StateTime.reset();
-                            state = State.GOING_TO_BACKBOARD;
-
-                        }
-
-                        break;
-
-
-                    case GOING_TO_BACKBOARD:
-
-                        Subsystems.slideAngle(ARM_RESTING_POSITION);
-                        wrist.setPosition(WRIST_DOWN);
-
-
-                        if (!drive.isBusy()) {
-
-                            drive.followTrajectorySequenceAsync(crossMap);
                             StateTime.reset();
                             state = State.BACKBOARD;
 
@@ -453,6 +428,9 @@ public class FarAutoRed extends LinearOpMode {
 
                     case BACKBOARD:
 
+                        THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                        THEsubsystem.slideExtension(SLIDE_BACKBOARD);
+                        wrist.setPosition(WRIST_BACKBOARD);
 
                         if (board == Board.LEFT){
 
@@ -470,6 +448,7 @@ public class FarAutoRed extends LinearOpMode {
 
                         }
 
+
                         if (!drive.isBusy()) {
 
                             StateTime.reset();
@@ -480,12 +459,9 @@ public class FarAutoRed extends LinearOpMode {
                         break;
 
                     case LEFT_CLAW_OPEN:
-                        Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                        Subsystems.slideExtension(SLIDE_BACKBOARD);
-                        wrist.setPosition(WRIST_BACKBOARD);
 
 
-                        if (StateTime.time() > 1 ) {
+                        if (StateTime.time() > 0.3) {
 
                             leftClaw.setPosition(LEFT_CLAW_OPEN);
                             StateTime.reset();
@@ -497,22 +473,87 @@ public class FarAutoRed extends LinearOpMode {
 
                     case SLIDE_RETRACT:
 
-                        Subsystems.slideExtension(SLIDE_START_POS);
-                        Subsystems.slideAngle(ARM_RESTING_POSITION);
-                        wrist.setPosition(WRIST_UP);
-
-                        if (Math.abs(slideExtension.getCurrentPosition()) <= 20) {
+                        if (StateTime.time() >= 0.3) {
+                            THEsubsystem.slideExtension(SLIDE_START_POS);
+                        }
+                        if (StateTime.time() >= 0.6) {
 
                             StateTime.reset();
                             state = State.PARK;
 
                         }
 
+
+                        break;
+                    case PIXELSTACK:
+
+                        THEsubsystem.slideAngle(ARM_UNDER_BAR);
+
+                        if (!drive.isBusy()){
+
+                            THEsubsystem.slideAngle(PIXEL_STACK_ANGLE);
+
+                            if (StateTime.time() > 1) {
+                                THEsubsystem.slideExtension(PIXEL_STACK_EXTENSION);
+                                wrist.setPosition(WRIST_PIXEL_PICKUP);
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                StateTime.reset();
+                                state = State.PIXELSTACKGRAB;
+                            }
+
+                        }
+                        break;
+                    case PIXELSTACKGRAB:
+
+                        if (StateTime.time() >= 1){
+
+                            leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                            if (StateTime.time() > 1.5) {
+
+                                THEsubsystem.slideExtension(SLIDE_START_POS);
+                                if (StateTime.time() >= 2) {
+
+                                    THEsubsystem.slideAngle(ARM_UNDER_BAR);
+                                    wrist.setPosition(WRIST_DOWN);
+                                    drive.followTrajectorySequenceAsync(GoingBackThroughSide);
+                                    StateTime.reset();
+                                    state = State.BACKTOBACKBOARD;
+
+                                }
+
+                            }
+
+                        }
+
+
+
+                        break;
+                    case BACKTOBACKBOARD:
+
+
+                        if (!drive.isBusy()) {
+
+                            THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                            THEsubsystem.slideExtension(SLIDE_EXTENDED);
+                            wrist.setPosition(WRIST_BACKBOARD);
+                            if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_EXTENDED) <= 10) {
+
+                                leftClaw.setPosition(LEFT_CLAW_OPEN);
+                                StateTime.reset();
+                                state = State.PARK;
+
+                            }
+
+                        }
+
+
                         break;
 
                     case PARK:
 
-
+                        THEsubsystem.slideExtension(SLIDE_START_POS);
+                        THEsubsystem.slideAngle(ARM_RESTING_POSITION);
+                        wrist.setPosition(WRIST_UP);
                         if (leftPark) {
                             drive.followTrajectorySequenceAsync(parkRight);
                         } else {
@@ -522,9 +563,7 @@ public class FarAutoRed extends LinearOpMode {
                         }
                         StateTime.reset();
                         state = State.DONE;
-
                         break;
-
                     case DONE:
                         break;
 
@@ -543,3 +582,5 @@ public class FarAutoRed extends LinearOpMode {
         }
     }
 }
+
+

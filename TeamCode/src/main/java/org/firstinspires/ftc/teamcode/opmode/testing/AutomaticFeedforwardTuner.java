@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.testing;
+package org.firstinspires.ftc.teamcode.opMode.testing;
 
 import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_RPM;
 import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.RUN_USING_ENCODER;

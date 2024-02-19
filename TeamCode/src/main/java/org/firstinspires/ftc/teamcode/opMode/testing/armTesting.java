@@ -1,19 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Robot.*;
+import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
 
 @TeleOp
 @Config
@@ -46,16 +45,16 @@ public class armTesting extends OpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         drone = hardwareMap.get(Servo.class, "drone");
-        Subsystems.init();
+        THEsubsystem.init();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     }
 
         public void loop() {
 
-            Subsystems.slideExtension(slide);
-            Subsystems.slideAngle(arm);
-            Subsystems.hangingArm(hanging);
+            THEsubsystem.slideExtension(slide);
+            THEsubsystem.slideAngle(arm);
+            THEsubsystem.hangingArm(hanging);
             drone.setPosition(dronepos);
             wrist.setPosition(wristpos);
             leftClaw.setPosition(lclawpos);

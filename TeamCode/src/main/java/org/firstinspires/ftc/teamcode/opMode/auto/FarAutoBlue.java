@@ -1,16 +1,16 @@
-    package org.firstinspires.ftc.teamcode.comp;
+    package org.firstinspires.ftc.teamcode.opMode.auto;
 
-    import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
-    import static org.firstinspires.ftc.teamcode.Robot.leftClaw;
-    import static org.firstinspires.ftc.teamcode.Robot.leftFront;
-    import static org.firstinspires.ftc.teamcode.Robot.leftRear;
-    import static org.firstinspires.ftc.teamcode.Robot.rightClaw;
-    import static org.firstinspires.ftc.teamcode.Robot.rightFront;
-    import static org.firstinspires.ftc.teamcode.Robot.rightRear;
-    import static org.firstinspires.ftc.teamcode.Robot.slideExtension;
-    import static org.firstinspires.ftc.teamcode.Robot.slidePivot;
-    import static org.firstinspires.ftc.teamcode.Robot.touch;
-    import static org.firstinspires.ftc.teamcode.Robot.wrist;
+    import static org.firstinspires.ftc.teamcode.common.hardware.PoseStorage.currentPose;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.leftClaw;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.leftFront;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.leftRear;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.rightClaw;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.rightFront;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.rightRear;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.slideExtension;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.slidePivot;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.touch;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.wrist;
 
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.config.Config;
@@ -25,7 +25,7 @@
     import com.qualcomm.robotcore.util.ElapsedTime;
 
     import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-    import org.firstinspires.ftc.teamcode.Subsystems;
+    import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
     import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue ;
     import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive ;
     import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
@@ -140,7 +140,7 @@
             // Touch Sensor
             touch = hardwareMap.get(TouchSensor.class, "touch");
 
-            Subsystems.init();
+            THEsubsystem.init();
 
             drive.setPoseEstimate(startPoseBlue);
 
@@ -355,7 +355,7 @@
 
                         case LEFT_TAPE:
 
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
                             if (!drive.isBusy()) {
 
@@ -368,7 +368,7 @@
                             break;
 
                         case MIDDLE_TAPE:
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
                             if (!drive.isBusy()) {
 
@@ -381,12 +381,12 @@
                             break;
 
                         case RIGHT_TAPE:
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_RIGHT_TAPE);
 
                             if (StateTime.time() >= 1) {
 
-                                Subsystems.slideExtension(SLIDE_RIGHT_TAPE);
+                                THEsubsystem.slideExtension(SLIDE_RIGHT_TAPE);
 
                             }
 
@@ -403,7 +403,7 @@
                         case SLIDE_EXTENSION:
 
                             if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
-                                Subsystems.slideExtension(SLIDE_EXTENDED);
+                                THEsubsystem.slideExtension(SLIDE_EXTENDED);
                             }
 
                             if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
@@ -421,7 +421,7 @@
 
                             if (StateTime.time() > 0.5) {
 
-                                Subsystems.slideExtension(SLIDE_START_POS);
+                                THEsubsystem.slideExtension(SLIDE_START_POS);
                                 drive.followTrajectorySequenceAsync(poseToCross);
                                 StateTime.reset();
                                 state = State.GOING_TO_BACKBOARD;
@@ -433,7 +433,7 @@
 
                         case GOING_TO_BACKBOARD:
 
-                            Subsystems.slideAngle(ARM_RESTING_POSITION);
+                            THEsubsystem.slideAngle(ARM_RESTING_POSITION);
                             wrist.setPosition(WRIST_DOWN);
 
 
@@ -478,8 +478,8 @@
                             break;
 
                         case LEFT_CLAW_OPEN:
-                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
 
@@ -495,8 +495,8 @@
 
                         case SLIDE_RETRACT:
 
-                            Subsystems.slideExtension(SLIDE_START_POS);
-                            Subsystems.slideAngle(ARM_RESTING_POSITION);
+                            THEsubsystem.slideExtension(SLIDE_START_POS);
+                            THEsubsystem.slideAngle(ARM_RESTING_POSITION);
                             wrist.setPosition(WRIST_UP);
 
                             if (Math.abs(slideExtension.getCurrentPosition()) <= 20) {

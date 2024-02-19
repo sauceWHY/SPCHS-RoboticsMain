@@ -1,7 +1,7 @@
-    package org.firstinspires.ftc.teamcode.comp;
+    package org.firstinspires.ftc.teamcode.opMode.auto;
 
-    import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
-    import static org.firstinspires.ftc.teamcode.Robot.*;
+    import static org.firstinspires.ftc.teamcode.common.hardware.PoseStorage.currentPose;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.config.Config;
@@ -11,18 +11,13 @@
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.acmerobotics.roadrunner.geometry.Pose2d;
     import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-    import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
-    import com.qualcomm.robotcore.hardware.DcMotorSimple;
     import com.qualcomm.robotcore.hardware.Servo;
     import com.qualcomm.robotcore.hardware.TouchSensor;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-    import android.annotation.SuppressLint;
-
     import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-    import org.firstinspires.ftc.teamcode.PoseStorage;
     import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue ;
     import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive ;
     import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
@@ -31,7 +26,7 @@
     import org.openftc.easyopencv.OpenCvCameraFactory;
     import org.openftc.easyopencv.OpenCvCameraRotation;
 
-    import org.firstinspires.ftc.teamcode.Subsystems;
+    import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
 
     @Config
     @Autonomous(name = "AutoBlueBoard", group = "Competition")
@@ -144,7 +139,7 @@
         // Touch Sensor
         touch = hardwareMap.get(TouchSensor.class, "touch");
 
-        Subsystems.init();
+        THEsubsystem.init();
 
         drive.setPoseEstimate(startPoseBlueBB);
 
@@ -356,12 +351,12 @@
 
                         case LEFT_TAPE:
 
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_LEFT_TAPE);
 
                             if (StateTime.time() >= 1) {
 
-                                Subsystems.slideExtension(SLIDE_LEFT_TAPE);
+                                THEsubsystem.slideExtension(SLIDE_LEFT_TAPE);
 
                             }
 
@@ -377,7 +372,7 @@
 
                         case MIDDLE_TAPE:
 
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
                             if (!drive.isBusy()) {
 
@@ -391,7 +386,7 @@
 
                         case RIGHT_TAPE:
 
-                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
+                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
 
                             if (!drive.isBusy()) {
 
@@ -406,7 +401,7 @@
                         case SLIDE_EXTENSION:
 
                             if (Math.abs(slidePivot.getCurrentPosition()) >= 2990) {
-                                Subsystems.slideExtension(SLIDE_EXTENDED);
+                                THEsubsystem.slideExtension(SLIDE_EXTENDED);
                             }
                             if (Math.abs(slideExtension.getCurrentPosition()) >= 1790) {
 
@@ -432,8 +427,8 @@
 
                         case BACKBOARD:
 
-                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
                             if (board == Board.LEFT){
@@ -478,7 +473,7 @@
                         case SLIDE_RETRACT:
 
                             if (StateTime.time() >= 0.3) {
-                                Subsystems.slideExtension(SLIDE_START_POS);
+                                THEsubsystem.slideExtension(SLIDE_START_POS);
                             }
                             if (StateTime.time() >= 0.6) {
 
@@ -491,14 +486,14 @@
                             break;
                         case PIXELSTACK:
 
-                            Subsystems.slideAngle(ARM_UNDER_BAR);
+                            THEsubsystem.slideAngle(ARM_UNDER_BAR);
 
                             if (!drive.isBusy()){
 
-                                Subsystems.slideAngle(PIXEL_STACK_ANGLE);
+                                THEsubsystem.slideAngle(PIXEL_STACK_ANGLE);
 
                                 if (StateTime.time() > 1) {
-                                    Subsystems.slideExtension(PIXEL_STACK_EXTENSION);
+                                    THEsubsystem.slideExtension(PIXEL_STACK_EXTENSION);
                                     wrist.setPosition(WRIST_PIXEL_PICKUP);
                                     leftClaw.setPosition(LEFT_CLAW_OPEN);
                                     StateTime.reset();
@@ -514,10 +509,10 @@
                                     leftClaw.setPosition(LEFT_CLAW_CLOSE);
                                     if (StateTime.time() > 1.5) {
 
-                                        Subsystems.slideExtension(SLIDE_START_POS);
+                                        THEsubsystem.slideExtension(SLIDE_START_POS);
                                         if (StateTime.time() >= 2) {
 
-                                            Subsystems.slideAngle(ARM_UNDER_BAR);
+                                            THEsubsystem.slideAngle(ARM_UNDER_BAR);
                                             wrist.setPosition(WRIST_DOWN);
                                             drive.followTrajectorySequenceAsync(GoingBackThroughSide);
                                             StateTime.reset();
@@ -537,8 +532,8 @@
 
                             if (!drive.isBusy()) {
 
-                                Subsystems.slideAngle(BACK_BOARD_ANGLE);
-                                Subsystems.slideExtension(SLIDE_EXTENDED);
+                                THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
+                                THEsubsystem.slideExtension(SLIDE_EXTENDED);
                                 wrist.setPosition(WRIST_BACKBOARD);
                                 if (Math.abs(slideExtension.getCurrentPosition() - SLIDE_EXTENDED) <= 10) {
 
@@ -555,8 +550,8 @@
 
                         case PARK:
 
-                            Subsystems.slideExtension(SLIDE_START_POS);
-                            Subsystems.slideAngle(ARM_RESTING_POSITION);
+                            THEsubsystem.slideExtension(SLIDE_START_POS);
+                            THEsubsystem.slideAngle(ARM_RESTING_POSITION);
                             wrist.setPosition(WRIST_UP);
                             if (leftPark) {
                                 drive.followTrajectorySequenceAsync(parkRight);
