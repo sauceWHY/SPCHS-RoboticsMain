@@ -27,14 +27,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode.common.hardware;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.armmotor;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.leftWrist;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightSlide;
+import static org.firstinspires.ftc.teamcode.common.hardware.hardwareinit.rightWrist;
+
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /*
@@ -55,36 +65,31 @@ import com.qualcomm.robotcore.util.Range;
  * Also add a new OpMode, select the sample ConceptExternalHardwareClass.java, and select TeleOp.
  *
  */
-
+@Config
 public class RobotHardware {
-
-    /* Declare OpMode members. */
-    private LinearOpMode myOpMode = null;   // gain access to methods in the calling OpMode.
-
-    // Define Motor and Servo objects  (Make them private so they can't be accessed externally)
-    private DcMotor leftFrontDrive   = null;
-    private DcMotor rightFrontDrive  = null;
-    private DcMotor leftRearDrive = null;
-    private DcMotor rightRearDrive = null;
-    private DcMotor armAngleMotor = null;
-    private DcMotor leftSlide = null;
-    private DcMotor rightSlide = null;
-    private Servo leftClaw = null;
-    private Servo rightClaw = null;
-    private Servo rightWrist = null;
-    private Servo leftWrist = null;
-    private TouchSensor touchSensor = null;
-
-
-    // Define Drive constants.  Make them public so they CAN be used by the calling OpMode
-    public static final double MID_SERVO       =  0.5 ;
-    public static final double HAND_SPEED      =  0.02 ;  // sets rate to move servo
-    public static final double ARM_UP_POWER    =  0.45 ;
-    public static final double ARM_DOWN_POWER  = -0.45 ;
+    private static RobotHardware instance = null;
+    private boolean enabled;
+    private final ElapsedTime runtime = new ElapsedTime();
+    private HardwareMap hardwareMap;
+    public DcMotor rearLeftDrive;
+    public DcMotor rearRightDrive;
+    public DcMotor frontRightDrive;
+    public DcMotor frontLeftDrive;
+    public DcMotor rightSlide;
+    public DcMotor leftSlide;
+    public DcMotor armAngleMotor;
+    public Servo rightWrist;
+    public Servo leftWrist;
+    public Servo leftClaw;
+    public Servo rightClaw;
 
     // Define a constructor that allows the OpMode to pass a reference to itself.
-    public RobotHardware (LinearOpMode opmode) {
-        myOpMode = opmode;
+    public static RobotHardware getInstance() {
+        if (instance == null) {
+            instance = new RobotHardware();
+        }
+        instance.enabled = true;
+        return instance;
     }
 
     /**
@@ -93,47 +98,49 @@ public class RobotHardware {
      * <p>
      * All of the hardware devices are accessed via the hardware map, and initialized.
      */
-    public void init()    {
+    public void init(final HardwareMap hardwareMap)    {
+        this.hardwareMap = hardwareMap;
         // Define and Initialize Motors (note: need to use reference to actual OpMode).
-        leftFrontDrive  = myOpMode.hardwareMap.get(DcMotor.class, "left_drive");
-        rightFrontDrive = myOpMode.hardwareMap.get(DcMotor.class, "right_drive");
-        rightFrontDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "rightFront");
-        leftFrontDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRearDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRearDrive = myOpMode.hardwareMap.get(DcMotorEx.class, "rightRear");
-        armAngleMotor   = myOpMode.hardwareMap.get(DcMotor.class, "arm");
-        leftSlide = myOpMode.hardwareMap.get(DcMotor.class, "leftSlide");
-        rightSlide = myOpMode.hardwareMap.get(DcMotor.class, "rightSlide");
+        this.rearLeftDrive  = hardwareMap.get(DcMotor.class, "leftRear");
+        this.rearRightDrive = hardwareMap.get(DcMotor.class, "rightRear");
+        this.frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
+        this.frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
+        this.armAngleMotor   = hardwareMap.get(DcMotor.class, "armmotor");
+        this.rightSlide = hardwareMap.get(DcMotor.class, "rightSlide");
+        this.leftSlide = hardwareMap.get(DcMotor.class, "leftSlide");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightRearDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftRearDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rearLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rightFrontDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftFrontDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightRearDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftRearDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-
-        // If there are encoders connected, switch to RUN_USING_ENCODER mode for greater accuracy
-        // leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Define and initialize ALL installed servos.
-        leftClaw = myOpMode.hardwareMap.get(Servo.class, "leftClaw");
-        rightClaw = myOpMode.hardwareMap.get(Servo.class, "rightClaw");
-        rightWrist = myOpMode.hardwareMap.get(Servo.class, "rightWrist");
-        leftWrist = myOpMode.hardwareMap.get(Servo.class, "leftWrist");
+        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
+        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+        rightWrist = hardwareMap.get(Servo.class,"rightWrist");
+        leftWrist = hardwareMap.get(Servo.class,"leftWrist");
 
-        myOpMode.telemetry.addData(">", "Hardware Initialized");
-        myOpMode.telemetry.update();
+
+        telemetry.addData(">", "Hardware Initialized");
+        telemetry.update();
+    }
+    public void initTelemetry() {
+        telemetry.addData("posleftslide", leftSlide.getCurrentPosition());
+        telemetry.addData("posrightslide", rightSlide.getCurrentPosition());
+        telemetry.addData("posarmmotor", armmotor.getCurrentPosition());
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("posleftWrist", leftWrist.getPosition());
+        telemetry.addData("posrightWrist", rightWrist.getPosition());
+        telemetry.update();
     }
 
     /**

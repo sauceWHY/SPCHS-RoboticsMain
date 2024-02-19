@@ -23,9 +23,9 @@
 
     import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
     import org.firstinspires.ftc.teamcode.PoseStorage;
-    import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
-    import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-    import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+    import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue ;
+    import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive ;
+    import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
     import org.opencv.core.Scalar;
     import org.openftc.easyopencv.OpenCvCamera;
     import org.openftc.easyopencv.OpenCvCameraFactory;
