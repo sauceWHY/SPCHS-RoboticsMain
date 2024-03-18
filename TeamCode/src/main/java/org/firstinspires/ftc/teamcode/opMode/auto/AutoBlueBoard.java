@@ -59,8 +59,8 @@
     }
 
 
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 180.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 96, 255);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0, 140);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 80, 255);
 
     public final ElapsedTime runtime = new ElapsedTime();
     private final ElapsedTime StateTime = new ElapsedTime();
@@ -208,32 +208,32 @@
 
         TrajectorySequence leftTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                .lineToConstantHeading(new Vector2d(29, 59))
+                .lineToConstantHeading(new Vector2d(29.5, 59))
                 .build();
 
         TrajectorySequence middleTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                .lineToLinearHeading(new Pose2d(28.3, 51.4, Math.toRadians(260)))
+                .lineToLinearHeading(new Pose2d(26.8, 54.9, Math.toRadians(265)))
                 .build();
 
         TrajectorySequence rightTape = drive.trajectorySequenceBuilder(startPoseBlueBB)
 
-                .lineToLinearHeading(new Pose2d(31, 48, Math.toRadians(215)))
+                .lineToLinearHeading(new Pose2d(30, 48, Math.toRadians(215)))
                 .build();
 
-        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(rightTape.end())
+        TrajectorySequence backBoardLeft = drive.trajectorySequenceBuilder(leftTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, 36.1, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(51, 37.1, Math.toRadians(0)))
                 .build();
 
         TrajectorySequence backBoardMiddle = drive.trajectorySequenceBuilder(middleTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, 31.8, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(51, 31.8, Math.toRadians(0)))
                 .build();
 
-        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(leftTape.end())
+        TrajectorySequence backBoardRight = drive.trajectorySequenceBuilder(rightTape.end())
 
-                .lineToLinearHeading(new Pose2d(49.4, 25.9, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(51, 25.9, Math.toRadians(0)))
                 .build();
 
 
@@ -475,7 +475,7 @@
                             if (StateTime.time() >= 0.3) {
                                 THEsubsystem.slideExtension(SLIDE_START_POS);
                             }
-                            if (StateTime.time() >= 0.6) {
+                            if (StateTime.time() >= 0.8) {
 
                                 StateTime.reset();
                                 state = State.PARK;

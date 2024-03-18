@@ -1,24 +1,27 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
+import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @TeleOp
 @Config
 public class armTesting extends OpMode {
     public static PIDController controller;
-    public static double p = 0.003, i = 0, d = 0.00015;
+    public static double p = 1, i = 0, d = 0.00015;
     public static double f = 0.08;
     public final double ticks_per_rev = 537.6;
     public static int hanging = 0;
@@ -28,6 +31,7 @@ public class armTesting extends OpMode {
     public static double lclawpos = 0;
     public static double wristpos = 0;
     public static double dronepos = 0;
+    static boolean pressed = false;
 
 
     public void init() {
@@ -36,7 +40,7 @@ public class armTesting extends OpMode {
         slidePivot.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         slidePivot.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         slideExtension = hardwareMap.get(DcMotorEx.class, "slideExtension");
-        slideExtension.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        slideExtension.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         hangingMotor = hardwareMap.get(DcMotorEx.class, "hangingMotor");
         hangingMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
@@ -45,16 +49,24 @@ public class armTesting extends OpMode {
         wrist = hardwareMap.get(Servo.class, "wrist");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
         drone = hardwareMap.get(Servo.class, "drone");
-        THEsubsystem.init();
+        touch = hardwareMap.get(TouchSensor.class, "touch");
+        Subsystems.init();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     }
 
         public void loop() {
-
-            THEsubsystem.slideExtension(slide);
-            THEsubsystem.slideAngle(arm);
-            THEsubsystem.hangingArm(hanging);
+            if (touch.isPressed() && !pressed) {
+                slideExtension.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+                slideExtension.setPower(0);
+                pressed = true;
+            } else if (!touch.isPressed()) {
+                // Reset 'pressed' when the touch sensor is released
+                pressed = false;
+            }
+            Subsystems.slideExtension(slide);
+            Subsystems.slideAngle(arm);
+            Subsystems.hangingArm(hanging);
             drone.setPosition(dronepos);
             wrist.setPosition(wristpos);
             leftClaw.setPosition(lclawpos);

@@ -40,7 +40,7 @@ public class PIDArm extends OpMode {
             controller.setPID(p, i, d);
             int armPos = slidePivot.getCurrentPosition();
             double pidArm = controller.calculate(armPos, armTarget);
-            double ffArm = Math.cos(Math.toRadians(armPos / ticks_per_rev)) * f;
+            double ffArm = Math.cos(Math.toRadians(armTarget / ticks_per_rev)) * f;
 
             double powerArm = pidArm + ffArm;
 

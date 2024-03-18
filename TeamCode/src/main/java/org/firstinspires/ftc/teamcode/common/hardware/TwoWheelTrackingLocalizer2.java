@@ -1,52 +1,27 @@
-package org.firstinspires.ftc.teamcode.common.hardware;
+package org.firstinspires.ftc.teamcode.drive;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.common.util.Encoder;
+import org.firstinspires.ftc.teamcode.util.Encoder;
 
 import java.util.Arrays;
 import java.util.List;
 
-/*
- * Sample tracking wheel localizer implementation assuming the standard configuration:
- *
- *    ^
- *    |
- *    | ( x direction)
- *    |
- *    v
- *    <----( y direction )---->
-
- *        (forward)
- *    /--------------\
- *    |     ____     |
- *    |     ----     |    <- Perpendicular Wheel
- *    |           || |
- *    |           || |    <- Parallel Wheel
- *    |              |
- *    |              |
- *    \--------------/
- *
- */
-@Config
-public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
+public class TwoWheelTrackingLocalizer2 extends TwoTrackingWheelLocalizer {
     public static double TICKS_PER_REV = 2000;
     public static double WHEEL_RADIUS = 1; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double PARALLEL_X = 1; // X is the up and down direction
-    public static double PARALLEL_Y = -5.4; // Y is the strafe direction
+    public static double PARALLEL_Y = -5; // Y is the strafe direction
 
-    public static double PERPENDICULAR_X = -5.5;
-    public static double PERPENDICULAR_Y = -1;
+    public static double PERPENDICULAR_X = -5;
+    public static double PERPENDICULAR_Y = 0;
 
     public static double X_MULTIPLIER = 0.9878;
     public static double Y_MULTIPLIER = 0.994;
@@ -56,12 +31,12 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     private final Encoder parallelEncoder;
     private final Encoder perpendicularEncoder;
 
-    private final SampleMecanumDrive drive;
+    private final SampleMecanumDrive2 drive;
 
-    public TwoWheelTrackingLocalizer(HardwareMap hardwareMap, SampleMecanumDrive drive) {
+    public TwoWheelTrackingLocalizer2(HardwareMap hardwareMap, SampleMecanumDrive2 drive) {
         super(Arrays.asList(
-            new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
-            new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
+                new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
+                new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
 
         this.drive = drive;

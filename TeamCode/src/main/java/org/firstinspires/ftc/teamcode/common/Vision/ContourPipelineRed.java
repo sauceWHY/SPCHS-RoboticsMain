@@ -21,8 +21,8 @@ public class ContourPipelineRed extends OpenCvPipeline {
 
 
     // Red, the default color                         Y      Cr     Cb    (Do not change Y)
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 188.0, 60.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 100.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 188.0, -255);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255, 128.0);
 
     //RED ALLIANCE!
     //public static Scalar scalarLowerYCrCb = new Scalar(0.0, 255.0, 32.0);

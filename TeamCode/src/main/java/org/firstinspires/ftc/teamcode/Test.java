@@ -20,17 +20,13 @@ public class Test extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
 
-        Pose2d startPoseBlueBB = new Pose2d(-36.2, -61, Math.toRadians(90));
+        Pose2d startPoseBlueBB = new Pose2d(-36.2, 61, Math.toRadians(270));
 
         drive.setPoseEstimate(startPoseBlueBB);
 
         TrajectorySequence armageddon = drive.trajectorySequenceBuilder(startPoseBlueBB)
-                .lineToLinearHeading(new Pose2d(-46.5,-38, Math.toRadians(65)))
-                .setReversed(true)
-                .waitSeconds(0.5)
-                .splineToConstantHeading(new Vector2d(-50.2,-30), Math.toRadians(100))
-                .splineToSplineHeading(new Pose2d(36,-28.9, Math.toRadians(0)), Math.toRadians(300))
-                .splineToConstantHeading(new Vector2d(44.5,-32), Math.toRadians(0))
+                .lineToLinearHeading(new Pose2d(-38, 53, Math.toRadians(245)))
+                .lineToLinearHeading(new Pose2d(-35.6, 59, Math.toRadians(0)))
 
 
 

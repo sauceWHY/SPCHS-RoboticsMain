@@ -1,9 +1,11 @@
-    package org.firstinspires.ftc.teamcode.opMode.teleop;
+    package org.firstinspires.ftc.teamcode.comp;
 
 
+    import com.acmerobotics.roadrunner.geometry.Pose2d;
     import com.arcrobotics.ftclib.controller.PIDController;
     import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+    import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
     import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,12 +14,18 @@
     import com.qualcomm.robotcore.hardware.TouchSensor;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
+    import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+    import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+    import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
     import java.lang.Math;
 
-    import org.firstinspires.ftc.teamcode.common.subsystems.THEsubsystem;
+    import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+    import org.firstinspires.ftc.teamcode.PoseStorage;
+    import org.firstinspires.ftc.teamcode.Subsystems;
     import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
+    import static org.firstinspires.ftc.teamcode.Robot.*;
 
 
     @TeleOp(name = "main", group = "Competition")
@@ -56,6 +64,7 @@
         private static final double RIGHT_CLAW_CLOSE = 0.6;
         private static final double WRIST_PIXEL_PICKUP = 0.43;
         private static final double WRIST_BACKBOARD = 0.55;
+        private static final double WRIST_LOWER_BACKBOARD = 0.72;
         private static final double WRIST_DOWN = 0;
         private static final double WRIST_UP = 1;
 
@@ -100,7 +109,7 @@
             leftClaw = hardwareMap.get(Servo.class, "leftClaw");
             rightClaw = hardwareMap.get(Servo.class, "rightClaw");
             drone = hardwareMap.get(Servo.class, "drone");
-            drone.setPosition(0.2);
+            drone.setPosition(0.45);
             rightClaw.setPosition(0.6);
             leftClaw.setPosition(0.17);
 
@@ -113,7 +122,7 @@
                     RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
             imu.initialize(parameters);
             controller = new PIDController(p, i, d);
-            THEsubsystem.init();
+            Subsystems.init();
 
 
 
@@ -160,14 +169,20 @@
 
                         case INITIAL:
 
-                            THEsubsystem.hangingArm(0);
-                            THEsubsystem.slideAngle(0);
-                            THEsubsystem.slideExtension(0);
+                            Subsystems.hangingArm(0);
+                            Subsystems.slideAngle(0);
+                            Subsystems.slideExtension(0);
 
                             if (slideExtension.getCurrentPosition() <= 60) {
                                 wrist.setPosition(WRIST_DOWN);
                             }
 
+                            if (gamepad1.y) {
+
+                                StateTime.reset();
+                                state = State.HANG;
+
+                            }
                             if (gamepad1.right_bumper && Math.abs(slidePivot.getCurrentPosition() - ARM_START_POSITION) <= 10 && Math.abs(slideExtension.getCurrentPosition() - SLIDE_START_POS) <= 60) {
 
                                 StateTime.reset();
@@ -186,7 +201,7 @@
                                 state = State.DRONE;
 
                             }
-                            if (gamepad1.dpad_left) {
+                            if (gamepad1.a) {
 
                                 StateTime.reset();
                                 state = State.UNDER_BAR;
@@ -196,12 +211,12 @@
 
                         case BACKBOARD:
 
-                            THEsubsystem.slideAngle(BACK_BOARD_ANGLE);
-                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
+                            Subsystems.slideAngle(BACK_BOARD_ANGLE);
+                            Subsystems.slideExtension(SLIDE_BACKBOARD);
                             wrist.setPosition(WRIST_BACKBOARD);
 
 
-                            if (gamepad1.left_bumper) {
+                            if (gamepad1.a) {
 
                                 StateTime.reset();
                                 state = State.UNDER_BAR;
@@ -266,11 +281,17 @@
 
                         case LOWER_BACKBOARD:
 
-                            THEsubsystem.slideAngle(ARM_LOWER_BACKBOARD);
-                            THEsubsystem.slideExtension(SLIDE_BACKBOARD);
-                            wrist.setPosition(WRIST_BACKBOARD);
+                            Subsystems.slideAngle(ARM_LOWER_BACKBOARD);
+                            Subsystems.slideExtension(SLIDE_BACKBOARD);
+                            wrist.setPosition(WRIST_LOWER_BACKBOARD);
 
 
+                            if (gamepad1.a) {
+
+                                StateTime.reset();
+                                state = State.UNDER_BAR;
+
+                            }
                             if (gamepad1.left_bumper) {
 
                                 StateTime.reset();
@@ -330,9 +351,9 @@
 
                         case PIXEL_PICKUP:
 
-                            THEsubsystem.slideAngle(PIXEL_ARM_ANGLE);
+                            Subsystems.slideAngle(PIXEL_ARM_ANGLE);
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
-                            THEsubsystem.slideExtension(SLIDE_EXTENDED);
+                            Subsystems.slideExtension(SLIDE_EXTENDED);
 
 
                             if (gamepad1.x) {
@@ -381,7 +402,7 @@
                             } else {
                                 leftClawPressed = false; // Reset the flag when the bumper is released
                             }
-                            if (gamepad1.dpad_left) {
+                            if (gamepad1.a) {
 
                                 StateTime.reset();
                                 state = State.UNDER_BAR;
@@ -393,31 +414,28 @@
 
                         case HANG:
 
+                            wrist.setPosition(WRIST_UP);
+                            rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                            leftClaw.setPosition(LEFT_CLAW_CLOSE);
+
                             if (gamepad1.y) {
-                                THEsubsystem.hangingArm(3900);
+                                Subsystems.hangingArm(3900);
                             }
 
                             
                             if (gamepad1.x) {
 
-                                THEsubsystem.hangingArm(200);
-                                wrist.setPosition(WRIST_DOWN);
+                                Subsystems.hangingArm(0);
 
                             }
 
                             break;
 
                         case DRONE:
+                            drone.setPosition(1);
 
-                            THEsubsystem.hangingArm(2500);
 
-                            if (Math.abs(hangingMotor.getCurrentPosition()) >= 2490) {
-
-                                drone.setPosition(1);
-
-                            }
-
-                            if (StateTime.time() > 5) {
+                            if (StateTime.time() > 2.5) {
 
                                 StateTime.reset();
                                 state = State.INITIAL;
@@ -428,16 +446,12 @@
 
                         case UNDER_BAR:
 
-                            THEsubsystem.slideAngle(ARM_RESTING);
-                            THEsubsystem.slideExtension(0);
-                            THEsubsystem.hangingArm(0);
+                            leftClaw.setPosition(LEFT_CLAW_CLOSE);
+                            rightClaw.setPosition(RIGHT_CLAW_CLOSE);
+                            Subsystems.slideAngle(ARM_RESTING);
+                            Subsystems.slideExtension(0);
+                            Subsystems.hangingArm(0);
                             wrist.setPosition(WRIST_PIXEL_PICKUP);
-                            if (gamepad1.y) {
-
-                                StateTime.reset();
-                                state = State.HANG;
-
-                            }
                             if (gamepad1.x) {
 
                                 StateTime.reset();
@@ -465,7 +479,7 @@
 
                     double y = -gamepad2.left_stick_y; // Remember, y stick value is reversed
                     double x = gamepad2.left_stick_x * 1.1 ; // Counteract imperfect strafing
-                    double rx = gamepad2.right_stick_x * 0.59;
+                    double rx = gamepad2.right_stick_x ;
 
 
                     double theta = Math.atan2(y, x);
