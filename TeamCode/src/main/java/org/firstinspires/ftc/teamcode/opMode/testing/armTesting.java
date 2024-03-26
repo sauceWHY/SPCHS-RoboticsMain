@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opMode.testing;
 
-import static org.firstinspires.ftc.teamcode.Robot.*;
+import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.teamcode.common.subsystems.Subsystems;
 
 @TeleOp
 @Config

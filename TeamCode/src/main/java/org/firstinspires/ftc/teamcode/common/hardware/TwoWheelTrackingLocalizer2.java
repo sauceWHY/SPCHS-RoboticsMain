@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.common.hardware;
 
 import androidx.annotation.NonNull;
 
@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.localization.TwoTrackingWheelLocalizer;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.util.Encoder;
+import org.firstinspires.ftc.teamcode.common.util.Encoder;
 
 import java.util.Arrays;
 import java.util.List;

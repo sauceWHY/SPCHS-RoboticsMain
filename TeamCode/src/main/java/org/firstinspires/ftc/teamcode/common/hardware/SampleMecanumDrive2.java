@@ -1,16 +1,16 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.common.hardware;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.common.hardware.DriveConstants.kV;
 
 import androidx.annotation.NonNull;
 
@@ -41,10 +41,10 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
-import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequenceBuilder;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequenceRunner;
+import org.firstinspires.ftc.teamcode.common.util.LynxModuleUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;

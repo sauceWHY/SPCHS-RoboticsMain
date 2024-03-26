@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
-public class THEsubsystem extends SubsystemBase {
+public class Subsystems extends SubsystemBase {
     public static PIDController controller;
     public static double p = 0.003, i = 0, d = 0.00015;
     public static double f = 0.08;

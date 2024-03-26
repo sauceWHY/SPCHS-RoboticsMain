@@ -1,4 +1,4 @@
-    package org.firstinspires.ftc.teamcode.comp;
+    package org.firstinspires.ftc.teamcode.opMode.teleop;
 
 
     import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -21,11 +21,11 @@
     import java.lang.Math;
 
     import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-    import org.firstinspires.ftc.teamcode.PoseStorage;
-    import org.firstinspires.ftc.teamcode.Subsystems;
-    import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+    import static org.firstinspires.ftc.teamcode.common.hardware.PoseStorage.currentPose;
+    import org.firstinspires.ftc.teamcode.common.subsystems.Subsystems;
+    import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
 
-    import static org.firstinspires.ftc.teamcode.Robot.*;
+    import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 
     @TeleOp(name = "main", group = "Competition")

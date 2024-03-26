@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequenceBuilder;
 
 @Autonomous
 public class Test extends LinearOpMode {

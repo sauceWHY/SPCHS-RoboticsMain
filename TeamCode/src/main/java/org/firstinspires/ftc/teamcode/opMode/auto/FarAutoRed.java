@@ -1,31 +1,32 @@
-package org.firstinspires.ftc.teamcode.comp;
+package org.firstinspires.ftc.teamcode.opMode.auto;
 
-import static org.firstinspires.ftc.teamcode.PoseStorage.currentPose;
-import static org.firstinspires.ftc.teamcode.Robot.*;
+import static org.firstinspires.ftc.teamcode.common.hardware.PoseStorage.currentPose;
+import static org.firstinspires.ftc.teamcode.common.hardware.Robot.*;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Subsystems;
-import org.firstinspires.ftc.teamcode.Vision.ContourPipelineBlue;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive2;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.common.Vision.ContourPipelineBlue ;
+import org.firstinspires.ftc.teamcode.common.hardware.SampleMecanumDrive2 ;
+import org.firstinspires.ftc.teamcode.common.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+
+import org.firstinspires.ftc.teamcode.common.subsystems.Subsystems;
 
 @Config
 @Autonomous(name = "FarAutoRed", group = "Competition", preselectTeleOp = "main")
