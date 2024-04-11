@@ -16,6 +16,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 @Config //Disable if not using FTC Dashboard https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022#opencv_freightfrenzy_2021-2022
 @Autonomous(name="OpenCV_Contour_3954_Test", group="Tutorials")
 
+//the robot has better vision than some people
+
 public class OpenCV_Contour_3954_Test extends LinearOpMode {
     private OpenCvCamera webcam;
 
